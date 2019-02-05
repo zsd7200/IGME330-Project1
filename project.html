@@ -29,7 +29,18 @@
 			audio.pause();
 			state = "Idle";
 		};
+		document.querySelector("#songSelector").onchange = musicChange;
 		update();
+	}
+
+	function musicChange(e)
+	{
+		if(state == "Play")
+		{
+			audio.pause();
+			state = "Idle";
+		}
+		audio.src = "media/" + e.target.value + ".mp3"; 
 	}
 
 	function update()
@@ -46,7 +57,15 @@
 	</script>
 </head>
 <body>
+
 	<audio src="media/chala.mp3" id="audio"></audio>
+	<label>Song:
+			<select id="songSelector">
+				<option value="chala" selected>Head Cha La</option>
+				<option value="tank">Tank!</option>
+				<option value="dmp">Digging My Potato</option>
+			</select>
+		</label>
 	<img src="media/gokuIdle.png" id="play" />
 	<button id="pause">Pause</button>
 </body>
