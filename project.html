@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>CHA LA</title>
+	
+	<script>
+	"use strict";
+	window.onload = init;
+	let play, pause, audio, state;
+	
+	
+	function init()
+	{
+		play = document.querySelector("#play"); 
+		pause = document.querySelector("#pause");
+		audio = document.querySelector("#audio");
+		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
+		console.log(state);
+		
+		play.onclick = kamahameha;
+		pause.onclick = function(e) {
+			audio.pause();
+		};
+	}
+	
+	// playing music handler
+	function kamahameha()
+	{
+		if(state == "Idle")
+		{
+			play.src = "media/gokuPlay.png";
+			state = "Play";
+		}
+		
+		audio.play();
+		console.log(play.src);
+	}
+	
+	function update()
+	{
+		requestAnimationFrame(update);
+	}
+	
+	</script>
+</head>
+<body>
+<audio src="media/chala.mp3" id="audio"></audio>
+<img src="media/gokuIdle.png" id="play" /><p>Play</p>
+<button id="pause">Pause</button>
+</body>
+</html>
