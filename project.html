@@ -4,20 +4,75 @@
 	<meta charset="utf-8" />
 	<title>CHA LA</title>
 	
+	<style>
+		#pause { 
+		position: absolute;
+        z-index: 2;
+        left: 575px;
+        top: 25px;
+		transform: scaleX(-1); 
+		}
+		#play {
+         position: absolute;
+          z-index: 2;
+         left: 25px;
+         top: 25px;
+      }
+	
+	</style>
+
 	<script>
 	"use strict";
 	window.onload = init;
-	let play, pause, audio, state;
+	let canvas, ctx, play, pause, audio, state, fighter, enemy;
+	
+	// dictionary of beam colors based on fighter name
+	const beamColors = {
+		"goku" : "#00f0ff",
+		"vegeta" : "#fc00ff",
+		"teenGohan" : "#f8f878",
+		"futureTrunks" : "#f8f878",
+		"android18" : "#f8f878",
+		"cell" : "#00f0ff",
+		"majinbuu" : "#fc00ff",
+		"frieza" : "#fc00ff"				
+	};
+
+	// beamPos[fighter][0] = x
+	// beamPos[fighter][1] = y
+	// beamPos[fighter][2] = height
+	// width is changed based on time left in song
+	const beamPos = {
+		"goku" : [75, 55, 30],
+		"vegeta" : [75, 55, 30],
+		"teenGohan" : [75, 55, 30],
+		"futureTrunks" : [75, 55, 30],
+		"android18" : [75, 55, 30],
+		"cell" : [75, 55, 30],
+		"majinbuu" : [75, 55, 30],
+		"frieza" : [75, 55, 30]				
+	};
 	
 	
 	function init()
 	{
+		canvas = document.querySelector("canvas");
+		ctx = canvas.getContext("2d");
+		const NUM_SAMPLES = 32;
+		//Getting elements from the DOM
 		play = document.querySelector("#play"); 
 		pause = document.querySelector("#pause");
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
-		console.log(state);
-		
+		fighter = "goku";
+		enemy = "frieza";
+		ctx.fillStyle = beamColors[fighter];
+		//ctx.fillRect(75,55,525,30);
+
+		console.log(audio.currentTime);
+		//let audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
+		//let sourceNode = audioCtx.createMediaElementSource(audio); 
+
 		//Starting the play music when the play button is pressed, and setting the state to "Play"
 		play.onclick = function(e) {
 			audio.play();
@@ -29,7 +84,13 @@
 			audio.pause();
 			state = "Idle";
 		};
+
 		document.querySelector("#songSelector").onchange = musicChange;
+		
+		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
+		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/" + enemy + "Idle.png"; };
+
+
 		update();
 	}
 
@@ -41,6 +102,8 @@
 			state = "Idle";
 		}
 		audio.src = "media/" + e.target.value + ".mp3"; 
+		//currentTime = 0;
+		ctx.clearRect(0,0,600,600);
 	}
 
 	function update()
@@ -48,16 +111,26 @@
 		requestAnimationFrame(update);
 		//Changing the state of the sprite based on the playing status
 		if(state == "Play")
-			play.src = "media/gokuPlay.png";
-		else if (state == "Idle")
-			play.src = "media/gokuIdle.png";
+		{
+			let percent = audio.currentTime / audio.duration;
+			play.src = "media/" + fighter + "Play.png";
+			ctx.clearRect(0,0,600,600);
+			ctx.fillStyle = beamColors[fighter];
+			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1], 525 * percent, beamPos[fighter][2]);
 
+
+		}
+		else if (state == "Idle")
+			play.src = "media/" + fighter + "Idle.png";
+
+		//console.log(audio.currentTime);
+		
 	}
 	
 	</script>
 </head>
 <body>
-
+	<canvas width="600" height=600></canvas>
 	<audio src="media/chala.mp3" id="audio"></audio>
 	<label>Song:
 			<select id="songSelector">
@@ -67,6 +140,32 @@
 			</select>
 		</label>
 	<img src="media/gokuIdle.png" id="play" />
-	<button id="pause">Pause</button>
+
+	<label>Fighter:
+			<select id="playSelector">
+				<option value="goku" selected>Goku</option>
+				<option value="vegeta">Vegeta</option>
+				<option value="teenGohan">Teen Gohan</option>
+				<option value="futureTrunks">Future Trunks</option>
+				<option value="android18">Android 18</option>
+				<option value="cell">Cell</option>
+				<option value="majinbuu">Majin Buu</option>
+				<option value="frieza">Frieza</option>
+			</select>
+	</label>
+
+	<img src="media/friezaIdle.png" id="pause" />
+	<label>Enemy:
+			<select id="pauseSelector">
+				<option value="goku">Goku</option>
+				<option value="vegeta">Vegeta</option>
+				<option value="teenGohan">Teen Gohan</option>
+				<option value="futureTrunks">Future Trunks</option>
+				<option value="android18">Android 18</option>
+				<option value="cell">Cell</option>
+				<option value="majinbuu">Majin Buu</option>
+				<option value="frieza" selected>Frieza</option>
+			</select>
+	</label>
 </body>
 </html>
