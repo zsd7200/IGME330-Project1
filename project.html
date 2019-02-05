@@ -25,7 +25,7 @@
 	<script>
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, audio, state, fighter, enemy;
+	let canvas, ctx, play, pause, audio, state, fighter, enemy, analyserNode;
 	
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	
@@ -53,6 +53,10 @@
 
 	const BEAM_HEIGHT = 30;
 
+	const BAR_WIDTH = 10;
+	const MAX_BAR_HEIGHT = 400;
+	const PADDING = 5;
+
 	// beamPos[fighter][0] = x
 	// beamPos[fighter][1] = y
 	// width is changed based on time left in song
@@ -73,7 +77,7 @@
 	{
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
-		const NUM_SAMPLES = 32;
+		const NUM_SAMPLES = 128;
 		//Getting elements from the DOM
 		play = document.querySelector("#play"); 
 		pause = document.querySelector("#pause");
@@ -83,8 +87,16 @@
 		enemy = "frieza";
 		ctx.fillStyle = beamColors[fighter];
 		
-		//let audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
-		//let sourceNode = audioCtx.createMediaElementSource(audio); 
+		let audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
+		let sourceNode = audioCtx.createMediaElementSource(audio); 
+		analyserNode = audioCtx.createAnalyser();
+		analyserNode.fftSize = NUM_SAMPLES;
+		sourceNode.connect(analyserNode);
+		analyserNode.connect(audioCtx.destination);
+
+		
+		//const MIDDLE_Y = ctx.canvas.height-20;
+
 
 		//Starting the play music when the play button is pressed, and setting the state to "Play"
 		play.onclick = function(e) {
@@ -140,11 +152,26 @@
 			
 			ctx.fillStyle = BEAM_MIDDLE_COLOR;
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);
-
-
 		}
 		else if (state == "Idle")
 			play.src = "media/" + fighter + "Idle.png";
+
+		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
+		analyserNode.getByteFrequencyData(data);
+		//ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+		ctx.save();
+		ctx.fillStyle = beamColors[fighter][0];
+		ctx.translate(beamPos[fighter][0],beamPos[fighter][1] + BEAM_HEIGHT);
+		ctx.scale(1, 1);
+		for(let byte of data)
+		{
+			ctx.translate(BAR_WIDTH, 0);
+			let percent = byte / 255;
+			//percent = percent < .02 ? .02 : percent;
+			ctx.fillRect(0,0,BAR_WIDTH, MAX_BAR_HEIGHT * percent);
+			ctx.translate(PADDING, 0);
+		}
+		ctx.restore();
 
 		//console.log(audio.currentTime);
 		
