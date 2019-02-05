@@ -18,35 +18,36 @@
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		console.log(state);
 		
-		play.onclick = kamahameha;
+		//Starting the play music when the play button is pressed, and setting the state to "Play"
+		play.onclick = function(e) {
+			audio.play();
+			state = "Play";
+		};
+
+		//Pausing the music when the pause button is pressed, and setting the state to "Idle"
 		pause.onclick = function(e) {
 			audio.pause();
+			state = "Idle";
 		};
+		update();
 	}
-	
-	// playing music handler
-	function kamahameha()
-	{
-		if(state == "Idle")
-		{
-			play.src = "media/gokuPlay.png";
-			state = "Play";
-		}
-		
-		audio.play();
-		console.log(play.src);
-	}
-	
+
 	function update()
 	{
 		requestAnimationFrame(update);
+		//Changing the state of the sprite based on the playing status
+		if(state == "Play")
+			play.src = "media/gokuPlay.png";
+		else if (state == "Idle")
+			play.src = "media/gokuIdle.png";
+
 	}
 	
 	</script>
 </head>
 <body>
-<audio src="media/chala.mp3" id="audio"></audio>
-<img src="media/gokuIdle.png" id="play" /><p>Play</p>
-<button id="pause">Pause</button>
+	<audio src="media/chala.mp3" id="audio"></audio>
+	<img src="media/gokuIdle.png" id="play" />
+	<button id="pause">Pause</button>
 </body>
 </html>
