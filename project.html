@@ -6,18 +6,19 @@
 	
 	<style>
 		#pause { 
-		position: absolute;
-        z-index: 2;
-        left: 575px;
-        top: 25px;
-		transform: scaleX(-1); 
+			position: absolute;
+			z-index: 2;
+			left: 575px;
+			top: 25px;
+			transform: scaleX(-1); 
 		}
+		
 		#play {
-         position: absolute;
-          z-index: 2;
-         left: 25px;
-         top: 25px;
-      }
+			position: absolute;
+			z-index: 2;
+			left: 25px;
+			top: 25px;
+		}
 	
 	</style>
 
@@ -26,31 +27,45 @@
 	window.onload = init;
 	let canvas, ctx, play, pause, audio, state, fighter, enemy;
 	
+	const BEAM_MIDDLE_COLOR = "#f3f3f3";
+	
 	// dictionary of beam colors based on fighter name
+	// beamColors[fighter][0] = darkest color	(first)
+	// beamColors[fighter][1] = mid	color		(second)
+	// beamColors[fighter][2] = lightest color	(third)
+	// then BEAM_MIDDLE_COLOR
+	
 	const beamColors = {
-		"goku" : "#00f0ff",
-		"vegeta" : "#fc00ff",
-		"teenGohan" : "#f8f878",
-		"futureTrunks" : "#f8f878",
-		"android18" : "#f8f878",
-		"cell" : "#00f0ff",
-		"majinbuu" : "#fc00ff",
-		"frieza" : "#fc00ff"				
+		"goku" : ["#009aa4", "#00cedb", "#00f0ff"],
+		"vegeta" : ["#9e00a0", "#d100d4", "#fc00ff"],
+		"teenGohan" : ["#f8c518", "#f0e030", "#f8f878"],
+		"futureTrunks" : ["#f8c518", "#f0e030", "#f8f878"],
+		"android18" : ["#f8c518", "#f0e030", "#f8f878"],
+		"cell" : ["#009aa4", "#00cedb", "#00f0ff"],
+		"majinbuu" : ["#9e00a0", "#d100d4", "#fc00ff"],
+		"frieza" : ["#9e00a0", "#d100d4", "#fc00ff"]				
 	};
+	
+	// Change these when changing CSS positioning of fighter/enemy. 
+	// FIGHTER_X = left, FIGHTER_Y = top. Used in beamPos calc.
+	const FIGHTER_X = 25;
+	const FIGHTER_Y = 25;
+
+	const BEAM_HEIGHT = 30;
 
 	// beamPos[fighter][0] = x
 	// beamPos[fighter][1] = y
-	// beamPos[fighter][2] = height
 	// width is changed based on time left in song
+	// height is BEAM_HEIGHT
 	const beamPos = {
-		"goku" : [75, 55, 30],
-		"vegeta" : [75, 55, 30],
-		"teenGohan" : [75, 55, 30],
-		"futureTrunks" : [75, 55, 30],
-		"android18" : [75, 55, 30],
-		"cell" : [75, 55, 30],
-		"majinbuu" : [75, 55, 30],
-		"frieza" : [75, 55, 30]				
+		"goku" : [60 + FIGHTER_X, 30 + FIGHTER_Y],
+		"vegeta" : [60 + FIGHTER_X, 20 + FIGHTER_Y],
+		"teenGohan" : [55 + FIGHTER_X, 35 + FIGHTER_Y],
+		"futureTrunks" : [60 + FIGHTER_X, 11 + FIGHTER_Y],
+		"android18" : [70 + FIGHTER_X, 20 + FIGHTER_Y],
+		"cell" : [67 + FIGHTER_X, 22 + FIGHTER_Y],
+		"majinbuu" : [68 + FIGHTER_X, 25 + FIGHTER_Y],
+		"frieza" : [70 + FIGHTER_X, 20 + FIGHTER_Y]				
 	};
 	
 	
@@ -67,9 +82,7 @@
 		fighter = "goku";
 		enemy = "frieza";
 		ctx.fillStyle = beamColors[fighter];
-		//ctx.fillRect(75,55,525,30);
-
-		console.log(audio.currentTime);
+		
 		//let audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
 		//let sourceNode = audioCtx.createMediaElementSource(audio); 
 
@@ -82,7 +95,7 @@
 		//Pausing the music when the pause button is pressed, and setting the state to "Idle"
 		pause.onclick = function(e) {
 			audio.pause();
-			state = "Idle";
+			//state = "Idle";
 		};
 
 		document.querySelector("#songSelector").onchange = musicChange;
@@ -115,8 +128,18 @@
 			let percent = audio.currentTime / audio.duration;
 			play.src = "media/" + fighter + "Play.png";
 			ctx.clearRect(0,0,600,600);
-			ctx.fillStyle = beamColors[fighter];
-			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1], 525 * percent, beamPos[fighter][2]);
+			
+			ctx.fillStyle = beamColors[fighter][0];
+			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1], 525 * percent, BEAM_HEIGHT);
+			
+			ctx.fillStyle = beamColors[fighter][1];
+			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 2, 525 * percent, BEAM_HEIGHT - 4);
+			
+			ctx.fillStyle = beamColors[fighter][2];
+			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 2.5, 525 * percent, BEAM_HEIGHT - 5);
+			
+			ctx.fillStyle = BEAM_MIDDLE_COLOR;
+			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);
 
 
 		}
