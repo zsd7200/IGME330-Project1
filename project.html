@@ -104,9 +104,13 @@
 
 		// Starting the play music when the play button is pressed, and setting the state to "Play"
 		play.onclick = function(e) {
-			audioCtx.resume();
+			audioCtx.resume(); // needed for chrome to play music
 			audio.play();
 			state = "Play";
+			
+			// this needs to be reset in case the user restarts the same song
+			pause.src = "media/" + enemy + "Idle.png";
+			pause.style.zIndex = 2;
 		};
 
 		// Pausing the music when the pause button is pressed
@@ -127,7 +131,7 @@
 	// handles if music is changed from dropdown
 	function musicChange(e)
 	{
-		// if music is currently playing, pause it and return fighter to idle state
+		// if music is currently playing, pause it
 		if(state == "Play")
 		{
 			audio.pause();
