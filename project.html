@@ -27,35 +27,39 @@
 	window.onload = init;
 	let canvas, ctx, play, pause, audio, state, fighter, enemy, analyserNode;
 	
+	// Change these when changing CSS positioning of fighter/enemy. 
+	// FIGHTER_X = left, FIGHTER_Y = top. Used in beamPos calc.
+	const FIGHTER_X = 25;
+	const FIGHTER_Y = 25;
+
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
+	const BEAM_HEIGHT = 30;
+	
+	const BAR_WIDTH = 10;
+	const MAX_BAR_HEIGHT = 400;
+	const PADDING = 5;
+	
+	const CANVAS_HEIGHT = 600;
+	const CANVAS_WIDTH = 700;
+	
 	
 	// dictionary of beam colors based on fighter name
 	// beamColors[fighter][0] = darkest color	(first)
 	// beamColors[fighter][1] = mid	color		(second)
 	// beamColors[fighter][2] = lightest color	(third)
 	// then BEAM_MIDDLE_COLOR
+	// beamColors[fighter][3] = beam endcap color
 	
 	const beamColors = {
-		"goku" : ["#009aa4", "#00cedb", "#00f0ff"],
-		"vegeta" : ["#9e00a0", "#d100d4", "#fc00ff"],
-		"teenGohan" : ["#f8c518", "#f0e030", "#f8f878"],
-		"futureTrunks" : ["#f8c518", "#f0e030", "#f8f878"],
-		"android18" : ["#f8c518", "#f0e030", "#f8f878"],
-		"cell" : ["#009aa4", "#00cedb", "#00f0ff"],
-		"majinbuu" : ["#9e00a0", "#d100d4", "#fc00ff"],
-		"frieza" : ["#9e00a0", "#d100d4", "#fc00ff"]				
+		"goku" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],
+		"vegeta" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"],
+		"teenGohan" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
+		"futureTrunks" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
+		"android18" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
+		"cell" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],
+		"majinbuu" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"],
+		"frieza" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"]				
 	};
-	
-	// Change these when changing CSS positioning of fighter/enemy. 
-	// FIGHTER_X = left, FIGHTER_Y = top. Used in beamPos calc.
-	const FIGHTER_X = 25;
-	const FIGHTER_Y = 25;
-
-	const BEAM_HEIGHT = 30;
-
-	const BAR_WIDTH = 10;
-	const MAX_BAR_HEIGHT = 400;
-	const PADDING = 5;
 
 	// beamPos[fighter][0] = x
 	// beamPos[fighter][1] = y
@@ -78,11 +82,14 @@
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
 		const NUM_SAMPLES = 128;
+		
 		//Getting elements from the DOM
 		play = document.querySelector("#play"); 
 		pause = document.querySelector("#pause");
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
+		
+		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
 		enemy = "frieza";
 		ctx.fillStyle = beamColors[fighter];
@@ -94,62 +101,80 @@
 		sourceNode.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);
 
-		
-		//const MIDDLE_Y = ctx.canvas.height-20;
-
-
-		//Starting the play music when the play button is pressed, and setting the state to "Play"
+		// Starting the play music when the play button is pressed, and setting the state to "Play"
 		play.onclick = function(e) {
 			audio.play();
 			state = "Play";
 		};
 
-		//Pausing the music when the pause button is pressed, and setting the state to "Idle"
-		pause.onclick = function(e) {
-			audio.pause();
-			//state = "Idle";
-		};
+		// Pausing the music when the pause button is pressed
+		// State is not set to "idle" because this would look jarring, as the beam stays out
+		pause.onclick = function(e) { audio.pause(); };
 
+		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
 		
+		// handle changing of fighter/enemy
 		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
 		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/" + enemy + "Idle.png"; };
 
-
+		// update for beam creation and animation
 		update();
 	}
-
+	
+	// handles if music is changed from dropdown
 	function musicChange(e)
 	{
+		// if music is currently playing, pause it and return fighter to idle state
 		if(state == "Play")
 		{
 			audio.pause();
 			state = "Idle";
 		}
-		audio.src = "media/" + e.target.value + ".mp3"; 
-		//currentTime = 0;
-		ctx.clearRect(0,0,600,600);
+		
+		// if song is over, then the beamcap is out and the enemy is in it's "dmgd" state
+		// return enemy to idle state and return the enemy to its proper z-index so it can be clicked
+		if (audio.duration == audio.currentTime)
+		{
+			pause.src = "media/" + enemy + "Idle.png";
+			pause.style.zIndex = 2;
+		}
+		
+		// handle door.wav since it's not an mp3 lmao
+		if (e.target.value != "door")
+			audio.src = "media/" + e.target.value + ".mp3";
+		else
+			audio.src = "media/door.wav";
+		
+		// wipe canvas of beam
+		ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 	}
 
+	// used for creation of beam
 	function update()
 	{
 		requestAnimationFrame(update);
-		//Changing the state of the sprite based on the playing status
+		
+		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
 		{
 			let percent = audio.currentTime / audio.duration;
 			play.src = "media/" + fighter + "Play.png";
-			ctx.clearRect(0,0,600,600);
+			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 			
+			// draw darkest color first
 			ctx.fillStyle = beamColors[fighter][0];
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1], 525 * percent, BEAM_HEIGHT);
 			
+			// middle color second
 			ctx.fillStyle = beamColors[fighter][1];
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 2, 525 * percent, BEAM_HEIGHT - 4);
 			
+			// light color third
 			ctx.fillStyle = beamColors[fighter][2];
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 2.5, 525 * percent, BEAM_HEIGHT - 5);
 			
+			// finish with white/BEAM_MIDDLE_COLOR in center
 			ctx.fillStyle = BEAM_MIDDLE_COLOR;
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);
 		}
@@ -158,11 +183,13 @@
 
 		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
 		analyserNode.getByteFrequencyData(data);
-		//ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+		
+		
 		ctx.save();
 		ctx.fillStyle = beamColors[fighter][0];
 		ctx.translate(beamPos[fighter][0],beamPos[fighter][1] + BEAM_HEIGHT);
 		ctx.scale(1, 1);
+		
 		for(let byte of data)
 		{
 			ctx.translate(BAR_WIDTH, 0);
@@ -171,26 +198,35 @@
 			ctx.fillRect(0,0,BAR_WIDTH, MAX_BAR_HEIGHT * percent);
 			ctx.translate(PADDING, 0);
 		}
-		ctx.restore();
-
-		//console.log(audio.currentTime);
 		
+		ctx.restore();
+		
+		// if song is over, change enemy state to "dmgd" and add beamcap
+		if(audio.duration == audio.currentTime)
+		{
+			pause.src = "media/" + enemy + "Dmgd.png";
+			let beamCap = new Image();
+			beamCap.src = "media/" + beamColors[fighter][3] + "BeamCap.png";
+			pause.style.zIndex = -1;
+			ctx.drawImage(beamCap, 600, beamPos[fighter][1] - 13);
+		}
 	}
 	
 	</script>
 </head>
 <body>
-	<canvas width="600" height=600></canvas>
+	<canvas width=700 height=600></canvas>
 	<audio src="media/chala.mp3" id="audio"></audio>
 	<label>Song:
 			<select id="songSelector">
 				<option value="chala" selected>Head Cha La</option>
 				<option value="tank">Tank!</option>
 				<option value="dmp">Digging My Potato</option>
+				<option value="door">door</option>
 			</select>
 		</label>
+		
 	<img src="media/gokuIdle.png" id="play" />
-
 	<label>Fighter:
 			<select id="playSelector">
 				<option value="goku" selected>Goku</option>
