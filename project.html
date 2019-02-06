@@ -90,6 +90,8 @@
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
+		drawStar(150,150,25);
+		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
 		enemy = "frieza";
@@ -216,6 +218,26 @@
 			pause.style.zIndex = -1;
 			ctx.drawImage(beamCap, 600, beamPos[fighter][1] - 13);
 		}
+	}
+	
+	function drawStar(cpX, cpY, lngt, fillStyle = "red")
+	{
+		ctx.save();
+		ctx.fillStyle = fillStyle;
+		ctx.beginPath();
+		ctx.moveTo(cpX, cpY);
+		ctx.lineTo(cpX, cpY - (lngt * 2));
+		ctx.lineTo(cpX - lngt, cpY + (lngt * .9));
+		ctx.fill(); // this is needed to fill in the weird white glitch
+		ctx.moveTo(cpX, cpY);
+		ctx.lineTo(cpX, cpY - (lngt * 2));
+		ctx.lineTo(cpX + lngt, cpY + (lngt * .9));
+		ctx.moveTo(cpX, cpY);
+		ctx.lineTo(cpX - (lngt + (lngt/2)), cpY - lngt);
+		ctx.lineTo(cpX + (lngt + (lngt/2)), cpY - lngt);
+		ctx.closePath();
+		ctx.fill();
+		ctx.restore();
 	}
 	
 	</script>
