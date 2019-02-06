@@ -23,6 +23,7 @@
 	</style>
 
 	<script>
+	
 	"use strict";
 	window.onload = init;
 	let canvas, ctx, play, pause, audio, state, fighter, enemy, analyserNode;
@@ -103,13 +104,14 @@
 
 		// Starting the play music when the play button is pressed, and setting the state to "Play"
 		play.onclick = function(e) {
+			audioCtx.resume();
 			audio.play();
 			state = "Play";
 		};
 
 		// Pausing the music when the pause button is pressed
 		// State is not set to "idle" because this would look jarring, as the beam stays out
-		pause.onclick = function(e) { audio.pause(); };
+		pause.onclick = function(e) { audio.pause(); audioCtx.suspend(); };
 
 		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
