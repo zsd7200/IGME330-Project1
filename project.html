@@ -72,8 +72,11 @@
 		// initialize beamPos with values from CSS
 		beamPos = setBeamPos(getComputedStyle(play).left, getComputedStyle(play).top);
 		
-		// testing drawStar
-		drawStar(150,150,70);
+		// testing drawBall
+		for(let i = 0; i < 7; i++)
+		{
+			drawBall(50 + (i * 100), 150, 50, (i + 1));
+		}
 		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
@@ -258,6 +261,80 @@
 		ctx.fill();
 		
 		// restore original context values
+		ctx.restore();
+	}
+	
+	function drawBall(x, y, rad, stars = 4, fillStyle = "orange", strokeStyle = "black", lineWidth = 3)
+	{
+		ctx.save();
+		
+		// set styles
+		ctx.fillStyle = fillStyle;
+		ctx.strokeStyle = strokeStyle;
+		ctx.lineWidth = lineWidth;
+		
+		// draw orb
+		ctx.beginPath();
+		ctx.arc(x, y, rad, 0, Math.PI * 2, false);
+		ctx.closePath();
+		ctx.fill();
+		ctx.stroke();
+		
+		// add in stars to correct positions
+		switch(stars)
+		{
+			case 1:
+				drawStar(x, y, rad / 8);
+				break;
+				
+			case 2:
+				drawStar(x - rad/5, y - rad/5, rad/8);
+				drawStar(x + rad/5, y + rad/5, rad/8)
+				break;
+				
+			case 3:
+				drawStar(x, y - rad/4, rad/8);
+				drawStar(x - rad/4, y + rad/5, rad/8);
+				drawStar(x + rad/4, y + rad/5, rad/8);
+				break;
+				
+			case 4:
+			default:
+				drawStar(x - rad/2.5, y - rad/4, rad/8);
+				drawStar(x + rad/5, y - rad/4, rad/8);
+				drawStar(x - rad/3.5, y + rad/4, rad/8);
+				drawStar(x + rad/3, y + rad/4, rad/8);
+				break;
+				
+			case 5:
+				drawStar(x, y - rad/2.5, rad/8);
+				drawStar(x - rad/2.5, y - rad/8, rad/8);
+				drawStar(x + rad/2.5, y - rad/8, rad/8);
+				drawStar(x - rad/4, y + rad/3, rad/8);
+				drawStar(x + rad/4, y + rad/3, rad/8);
+				break;
+				
+			case 6:
+				drawStar(x,y, rad/8);
+				drawStar(x, y - rad/2.5, rad/8);
+				drawStar(x - rad/2.5, y - rad/8, rad/8);
+				drawStar(x + rad/2.5, y - rad/8, rad/8);
+				drawStar(x - rad/4, y + rad/3, rad/8);
+				drawStar(x + rad/4, y + rad/3, rad/8);
+				break;
+				
+			case 7:
+				drawStar(x,y, rad/8);
+				drawStar(x - rad/2, y, rad/8);
+				drawStar(x + rad/2, y, rad/8);
+				drawStar(x - rad/4, y - rad/3, rad/8);
+				drawStar(x + rad/4, y - rad/3, rad/8);
+				drawStar(x - rad/4, y + rad/3, rad/8);
+				drawStar(x + rad/4, y + rad/3, rad/8);
+				break;
+		}
+
+		// restore ctx data
 		ctx.restore();
 	}
 	
