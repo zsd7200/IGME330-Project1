@@ -227,37 +227,37 @@
 	// draw a star based on a single point
 	function drawStar(cpX, cpY, lngt, fillStyle = "red")
 	{
-		// more detailed explanation as to how exactly drawStar works can be found
-		// here: https://s.lolisandstuff.moe/bNoARF4s.png
-	
 		// move Y so the user input is closer to center point
 		cpY += lngt * .6;
-	
+		
 		ctx.save();
 		ctx.fillStyle = fillStyle;
-		
-		
 		
 		// start first tri
 		ctx.beginPath();
 		ctx.moveTo(cpX, cpY);
 		ctx.lineTo(cpX, cpY - (lngt * 2));
 		ctx.lineTo(cpX - lngt, cpY + (lngt * .7));
-		ctx.fill(); // this is needed to fill in the weird white glitch
+		ctx.closePath();
+		ctx.fill();
 		
 		// second tri
+		ctx.beginPath();
 		ctx.moveTo(cpX, cpY);
 		ctx.lineTo(cpX, cpY - (lngt * 2));
 		ctx.lineTo(cpX + lngt, cpY + (lngt * .7));
+		ctx.closePath();
+		ctx.fill();
 		
 		// third and final tri
+		ctx.beginPath();
 		ctx.moveTo(cpX, cpY);
 		ctx.lineTo(cpX - (lngt + (lngt/2)), cpY - lngt);
 		ctx.lineTo(cpX + (lngt + (lngt/2)), cpY - lngt);
 		ctx.closePath();
-		
-		// fill star and restore ctx values
 		ctx.fill();
+		
+		// restore original context values
 		ctx.restore();
 	}
 	
