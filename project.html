@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>CHA LA</title>
 	
 	<style>
@@ -264,13 +265,13 @@
 		ctx.restore();
 	}
 	
-	function drawBall(x, y, rad, stars = 4, fillStyle = "orange", strokeStyle = "black", lineWidth = 3)
+	function drawBall(x, y, rad, stars = 4, lineWidth = 3)
 	{
 		ctx.save();
 		
 		// set styles
-		ctx.fillStyle = fillStyle;
-		ctx.strokeStyle = strokeStyle;
+		ctx.fillStyle = "yellow";
+		ctx.strokeStyle = "black";
 		ctx.lineWidth = lineWidth;
 		
 		// draw orb
@@ -279,6 +280,16 @@
 		ctx.closePath();
 		ctx.fill();
 		ctx.stroke();
+		
+		// draw inner orb
+		// https://stackoverflow.com/questions/5475755/how-to-draw-a-blurry-circle-on-html5-canvas
+		let orangeGrad = ctx.createRadialGradient(x,y,0,x,y,rad);
+		orangeGrad.addColorStop(0, "rgba(255, 165, 0, 1)");
+		orangeGrad.addColorStop(0.8, "rgba(228, 192, 0, .9)");
+		orangeGrad.addColorStop(1, "rgba(228, 192, 0, 0)");
+		
+		ctx.fillStyle = orangeGrad;
+		ctx.fillRect(x - rad, y - rad, x + rad, y + rad);
 		
 		// add in stars to correct positions
 		switch(stars)
