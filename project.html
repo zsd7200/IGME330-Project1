@@ -265,7 +265,7 @@
 		ctx.restore();
 	}
 	
-	function drawBall(x, y, rad, stars = 4, lineWidth = 3)
+	function drawBall(x, y, rad, stars = 4, lineWidth = (rad * .06))
 	{
 		ctx.save();
 		
@@ -313,8 +313,8 @@
 			default:
 				drawStar(x - rad/2.5, y - rad/4, rad/8);
 				drawStar(x + rad/5, y - rad/4, rad/8);
-				drawStar(x - rad/3.5, y + rad/4, rad/8);
-				drawStar(x + rad/3, y + rad/4, rad/8);
+				drawStar(x - rad/4.5, y + rad/4, rad/8);
+				drawStar(x + rad/2.5, y + rad/4, rad/8);
 				break;
 				
 			case 5:
@@ -344,6 +344,15 @@
 				drawStar(x + rad/4, y + rad/3, rad/8);
 				break;
 		}
+
+		// add white circle in top left for shading
+		let whiteGrad = ctx.createRadialGradient(x - rad/2, y - rad/2, 0, x - rad/4, y - rad/4, rad / 2);
+		whiteGrad.addColorStop(0, "rgba(255, 255, 255, .5)");
+		whiteGrad.addColorStop(0.8, "rgba(228, 228, 228, .3)");
+		whiteGrad.addColorStop(1, "rgba(228, 228, 228, 0)");
+		
+		ctx.fillStyle = whiteGrad;
+		ctx.fillRect(x - rad, y - rad, x + rad, y + rad);
 
 		// restore ctx data
 		ctx.restore();
