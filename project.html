@@ -26,12 +26,7 @@
 	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, audio, state, fighter, enemy, analyserNode;
-	
-	// Change these when changing CSS positioning of fighter/enemy. 
-	// FIGHTER_X = left, FIGHTER_Y = top. Used in beamPos calc.
-	const FIGHTER_X = 25;
-	const FIGHTER_Y = 25;
+	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode;
 
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
@@ -61,22 +56,6 @@
 		"majinbuu" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"],
 		"frieza" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"]				
 	};
-
-	// beamPos[fighter][0] = x
-	// beamPos[fighter][1] = y
-	// width is changed based on time left in song
-	// height is BEAM_HEIGHT
-	const beamPos = {
-		"goku" : [60 + FIGHTER_X, 30 + FIGHTER_Y],
-		"vegeta" : [60 + FIGHTER_X, 20 + FIGHTER_Y],
-		"teenGohan" : [55 + FIGHTER_X, 35 + FIGHTER_Y],
-		"futureTrunks" : [60 + FIGHTER_X, 11 + FIGHTER_Y],
-		"android18" : [70 + FIGHTER_X, 20 + FIGHTER_Y],
-		"cell" : [67 + FIGHTER_X, 22 + FIGHTER_Y],
-		"majinbuu" : [68 + FIGHTER_X, 25 + FIGHTER_Y],
-		"frieza" : [70 + FIGHTER_X, 20 + FIGHTER_Y]				
-	};
-	
 	
 	function init()
 	{
@@ -90,7 +69,11 @@
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
-		drawStar(150,150,25);
+		// initialize beamPos with values from CSS
+		beamPos = setBeamPos(getComputedStyle(play).left, getComputedStyle(play).top);
+		
+		// testing drawStar
+		drawStar(150,150,70);
 		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
@@ -128,6 +111,27 @@
 
 		// update for beam creation and animation
 		update();
+	}
+	
+	// handle setting beam position based on left and top from #play object's CSS values
+	function setBeamPos(left = 25, top = 25)
+	{
+		// beamPos[fighter][0] = x
+		// beamPos[fighter][1] = y
+		// width is changed based on time left in song
+		// height is BEAM_HEIGHT
+		let tempPos = {
+			"goku" : [60 + parseInt(left, 10), 30 + parseInt(top, 10)],
+			"vegeta" : [60 + parseInt(left, 10), 20 + parseInt(top, 10)],
+			"teenGohan" : [55 + parseInt(left, 10), 35 + parseInt(top, 10)],
+			"futureTrunks" : [60 + parseInt(left, 10), 11 + parseInt(top, 10)],
+			"android18" : [70 + parseInt(left, 10), 20 + parseInt(top, 10)],
+			"cell" : [67 + parseInt(left, 10), 22 + parseInt(top, 10)],
+			"majinbuu" : [68 + parseInt(left, 10), 25 + parseInt(top, 10)],
+			"frieza" : [70 + parseInt(left, 10), 20 + parseInt(top, 10)]				
+		};
+		
+		return tempPos;
 	}
 	
 	// handles if music is changed from dropdown
@@ -220,22 +224,39 @@
 		}
 	}
 	
+	// draw a star based on a single point
 	function drawStar(cpX, cpY, lngt, fillStyle = "red")
 	{
+		// more detailed explanation as to how exactly drawStar works can be found
+		// here: https://s.lolisandstuff.moe/bNoARF4s.png
+	
+		// move Y so the user input is closer to center point
+		cpY += lngt * .6;
+	
 		ctx.save();
 		ctx.fillStyle = fillStyle;
+		
+		
+		
+		// start first tri
 		ctx.beginPath();
 		ctx.moveTo(cpX, cpY);
 		ctx.lineTo(cpX, cpY - (lngt * 2));
-		ctx.lineTo(cpX - lngt, cpY + (lngt * .9));
+		ctx.lineTo(cpX - lngt, cpY + (lngt * .7));
 		ctx.fill(); // this is needed to fill in the weird white glitch
+		
+		// second tri
 		ctx.moveTo(cpX, cpY);
 		ctx.lineTo(cpX, cpY - (lngt * 2));
-		ctx.lineTo(cpX + lngt, cpY + (lngt * .9));
+		ctx.lineTo(cpX + lngt, cpY + (lngt * .7));
+		
+		// third and final tri
 		ctx.moveTo(cpX, cpY);
 		ctx.lineTo(cpX - (lngt + (lngt/2)), cpY - lngt);
 		ctx.lineTo(cpX + (lngt + (lngt/2)), cpY - lngt);
 		ctx.closePath();
+		
+		// fill star and restore ctx values
 		ctx.fill();
 		ctx.restore();
 	}
@@ -243,7 +264,7 @@
 	</script>
 </head>
 <body>
-	<canvas width=700 height=600></canvas>
+	<canvas width=700 height=600>Browser does not support canvas.</canvas>
 	<audio src="media/chala.mp3" id="audio"></audio>
 	<label>Song:
 			<select id="songSelector">
