@@ -3,7 +3,11 @@
 <head>
 	<meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>CHA LA</title>
+	<!-- https://stackoverflow.com/questions/18301745/how-to-set-up-a-favicon -->
+	<link rel="icon" type="image/png" href="media/favicon.png" sizes="16x16">
+
+	
+	<title>Dragon Ball Audio VisualiZer</title>
 	
 	<style>
 		#pause { 
@@ -172,6 +176,12 @@
 		
 		// wipe canvas of beam
 		ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		
+		// redraw balls
+		for(let i = 0; i < 7; i++)
+		{
+			drawBall(50 + (i * 100), 150, ballRadius, (i + 1));
+		}
 	}
 
 	// used for creation of beam
@@ -378,6 +388,9 @@
 </head>
 <body>
 	<canvas width=700 height=600>Browser does not support canvas.</canvas>
+	
+	<br>
+	
 	<audio src="media/chala.mp3" id="audio"></audio>
 	<label>Song:
 			<select id="songSelector">
