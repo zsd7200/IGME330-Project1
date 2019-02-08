@@ -27,13 +27,12 @@
 	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius;
+	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, maxBarHeight;
 
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
 	
-	const BAR_WIDTH = 10;
-	const MAX_BAR_HEIGHT = 400;
+	const BAR_WIDTH = 5;
 	const PADDING = 5;
 	
 	const CANVAS_HEIGHT = 600;
@@ -179,10 +178,12 @@
 	function update()
 	{
 		requestAnimationFrame(update);
+		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
+		analyserNode.getByteFrequencyData(data);
 		
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
-		{
+		{		
 			let percent = audio.currentTime / audio.duration;
 			play.src = "media/" + fighter + "Play.png";
 			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -201,37 +202,34 @@
 			
 			// finish with white/BEAM_MIDDLE_COLOR in center
 			ctx.fillStyle = BEAM_MIDDLE_COLOR;
-			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);
-		
+			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);	
+			
+			for (let i = 0; i < 64; i++)
+			{
+				let percent = data[i] / 255;
+				percent = percent < .07 ? .07 : percent;
+				
+				ctx.save();
+				ctx.fillStyle = beamColors[fighter][0];
+				ctx.translate(350, 150);		// behind 4* ball
+				//ctx.translate(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);		// dead center
+				ctx.scale(1, -1);
+				
+				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
+				ctx.rotate(rotationAmount);
+				ctx.translate(0, maxBarHeight / 1.1);
+				ctx.fillRect(0, 0, BAR_WIDTH, maxBarHeight * percent);
+				ctx.restore();
+			}
+			
 			// testing drawBall
 			for(let i = 0; i < 7; i++)
 			{
 				drawBall(50 + (i * 100), 150, ballRadius, (i + 1));
 			}
-		
 		}
 		else if (state == "Idle")
 			play.src = "media/" + fighter + "Idle.png";
-
-		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
-		analyserNode.getByteFrequencyData(data);
-		
-		
-		ctx.save();
-		ctx.fillStyle = beamColors[fighter][0];
-		ctx.translate(beamPos[fighter][0],beamPos[fighter][1] + BEAM_HEIGHT);
-		ctx.scale(1, 1);
-		
-		for(let byte of data)
-		{
-			ctx.translate(BAR_WIDTH, 0);
-			let percent = byte / 255;
-			//percent = percent < .02 ? .02 : percent;
-			ctx.fillRect(0,0,BAR_WIDTH, MAX_BAR_HEIGHT * percent);
-			ctx.translate(PADDING, 0);
-		}
-		
-		ctx.restore();
 		
 		// if song is over, change enemy state to "dmgd" and add beamcap
 		if(audio.duration == audio.currentTime)
@@ -281,8 +279,10 @@
 		ctx.restore();
 	}
 	
-	function drawBall(x, y, rad, stars = 4, lineWidth = (rad * .06))
+	function drawBall(x, y, rad, stars = 4, maxBar = (rad * 1.1), lineWidth = (rad * .06))
 	{
+		maxBarHeight = maxBar;
+	
 		ctx.save();
 		
 		// set styles
