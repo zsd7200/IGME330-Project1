@@ -9,7 +9,12 @@
 	
 	<title>Dragon Ball Audio VisualiZer</title>
 	
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css" integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA" crossorigin="anonymous">
+
+	
 	<style>
+		body{ margin: 8px; }
+	
 		#pause { 
 			position: absolute;
 			z-index: 2;
@@ -24,14 +29,13 @@
 			left: 25px;
 			top: 25px;
 		}
-	
 	</style>
 
 	<script>
 	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, maxBarHeight;
+	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, maxBarHeight, stars;
 
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
@@ -72,16 +76,19 @@
 		pause = document.querySelector("#pause");
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
-		ballRadius = 50;
+		
+		// setup sliders and labels
+		ballRadius = 150;
+		stars = random(1, 7);
+		document.querySelector("#numStars").value = stars;
+		document.querySelector("#radiusLabel").innerHTML = ballRadius;
+		document.querySelector("#starsLabel").innerHTML = stars;
 		
 		// initialize beamPos with values from CSS
 		beamPos = setBeamPos(getComputedStyle(play).left, getComputedStyle(play).top);
 		
-		// testing drawBall
-		for(let i = 0; i < 7; i++)
-		{
-			drawBall(50 + (i * 100), 150, ballRadius, (i + 1));
-		}
+		// draw big ball in center of canvas
+		drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
 		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
@@ -116,14 +123,21 @@
 		// handle changing of fighter/enemy
 		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
 		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/" + enemy + "Idle.png"; };
+		
+		// handle changing stars and radius based on sliders
 		document.querySelector("#ballRad").oninput = function(e) { 
-			ballRadius = e.target.value;
+			ballRadius = parseInt(e.target.value, 10);
+			document.querySelector("#radiusLabel").innerHTML = parseInt(e.target.value, 10);
 			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-			for(let i = 0; i < 7; i++)
-			{
-				drawBall(50 + (i * 100), 150, ballRadius, (i + 1));
-			}
+			drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
 		};
+		
+		document.querySelector("#numStars").oninput = function(e) {
+			stars = parseInt(e.target.value, 10);
+			document.querySelector("#starsLabel").innerHTML = parseInt(e.target.value, 10);
+			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+			drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
+		}
 
 		//Setting up full screen 
 		document.querySelector("#fullscreenBut").onclick = _ =>{
@@ -211,7 +225,7 @@
 		
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
-		{		
+		{
 			let percent = audio.currentTime / audio.duration;
 			play.src = "media/" + fighter + "Play.png";
 			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -239,7 +253,7 @@
 				
 				ctx.save();
 				ctx.fillStyle = beamColors[fighter][0];
-				ctx.translate(350, 150);		// behind 4* ball
+				ctx.translate(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);		// behind 4* ball
 				//ctx.translate(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);		// dead center
 				ctx.scale(1, -1);
 				
@@ -250,11 +264,7 @@
 				ctx.restore();
 			}
 			
-			// testing drawBall
-			for(let i = 0; i < 7; i++)
-			{
-				drawBall(50 + (i * 100), 150, ballRadius, (i + 1));
-			}
+			drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
 		}
 		else if (state == "Idle")
 			play.src = "media/" + fighter + "Idle.png";
@@ -303,6 +313,15 @@
 		ctx.closePath();
 		ctx.fill();
 		
+		// fill in little remaining bit of transparency
+		ctx.strokeStyle = fillStyle;
+		ctx.lineWidth = 1;
+		ctx.beginPath();
+		ctx.moveTo(cpX, cpY);
+		ctx.lineTo(cpX, cpY - (lngt * 2) + (lngt / 3.75));
+		ctx.closePath();
+		ctx.stroke();
+
 		// restore original context values
 		ctx.restore();
 	}
@@ -402,6 +421,12 @@
 		ctx.restore();
 	}
 	
+	// randy helper function
+	function random(min, max)
+	{
+		return Math.floor((Math.random() * max) + min);
+	}
+	
 	</script>
 </head>
 <body>
@@ -448,7 +473,18 @@
 	</label>
 	
 	
-	<label for="ballRad">Ball Radius:</label><input type="range" min="15" max="100" value="50" class="slider" id="ballRad">
+	<label for="ballRad">Ball Radius:</label>
+	<input type="range" min="15" max="300" value="150" class="slider" id="ballRad">
+	<span id="radiusLabel">???</span>
+	
+	<label for="numStars">Number of Stars:</label>
+	<input type="range" min="1" max="7" value="4" class="slider" id="numStars">
+	<span id="starsLabel">???</span>
+	
 	<button id="fullscreenBut">Full Screen</button>
+	
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js" integrity="sha384-7aThvCh9TypR7fIc2HV4O/nFMVCBwyIUKL8XCtKE+8xgCgl/PQGuFsvShjr74PBp" crossorigin="anonymous"></script>
 </body>
 </html>
