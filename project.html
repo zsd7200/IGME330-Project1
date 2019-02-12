@@ -209,11 +209,8 @@
 		// wipe canvas of beam
 		ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 		
-		// redraw balls
-		for(let i = 0; i < 7; i++)
-		{
-			drawBall(50 + (i * 100), 150, ballRadius, (i + 1));
-		}
+		// redraw ball
+		drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
 	}
 
 	// used for creation of beam
