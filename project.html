@@ -125,6 +125,11 @@
 			}
 		};
 
+		//Setting up full screen 
+		document.querySelector("#fullscreenBut").onclick = _ =>{
+				requestFullscreen(canvas);
+			};
+
 		// update for beam creation and animation
 		update();
 	}
@@ -148,6 +153,19 @@
 		};
 		
 		return tempPos;
+	}
+
+	function requestFullscreen(element)
+	{
+		if (element.requestFullscreen) {
+			  element.requestFullscreen();
+			} else if (element.mozRequestFullscreen) {
+			  element.mozRequestFullscreen();
+			} else if (element.mozRequestFullScreen) { // camel-cased 'S' was changed to 's' in spec
+			  element.mozRequestFullScreen();
+			} else if (element.webkitRequestFullscreen) {
+			  element.webkitRequestFullscreen();
+			}
 	}
 	
 	// handles if music is changed from dropdown
@@ -429,7 +447,8 @@
 			</select>
 	</label>
 	
-	<p>Ball Radius:</p>
-	<input type="range" min="15" max="100" value="50" class="slider" id="ballRad">
+	
+	<label for="ballRad">Ball Radius:</label><input type="range" min="15" max="100" value="50" class="slider" id="ballRad">
+	<button id="fullscreenBut">Full Screen</button>
 </body>
 </html>
