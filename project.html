@@ -35,8 +35,9 @@
 	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, maxBarHeight, stars;
+	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, maxBarHeight, stars, gainNode, numBalls;
 
+	let ballCenters = [];
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
 	
@@ -99,8 +100,14 @@
 		let sourceNode = audioCtx.createMediaElementSource(audio); 
 		analyserNode = audioCtx.createAnalyser();
 		analyserNode.fftSize = NUM_SAMPLES;
-		sourceNode.connect(analyserNode);
+		gainNode = audioCtx.createGain();
+		gainNode.gain.value = 1;
+		sourceNode.connect(gainNode);
+		gainNode.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);
+
+		numBalls = 1;
+		document.querySelector("#volumeLabel").innerHTML = gainNode.gain.value;
 
 		// Starting the play music when the play button is pressed, and setting the state to "Play"
 		play.onclick = function(e) {
@@ -137,6 +144,11 @@
 			document.querySelector("#starsLabel").innerHTML = parseInt(e.target.value, 10);
 			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 			drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
+		}
+
+		document.querySelector("#volumeSlider").oninput = function(e) {
+			gainNode.gain.value = e.target.value;
+			document.querySelector("#volumeLabel").innerHTML = Math.round((e.target.value/2 * 100));
 		}
 
 		//Setting up full screen 
@@ -218,7 +230,9 @@
 	{
 		requestAnimationFrame(update);
 		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
+		//Showing frequency 
 		analyserNode.getByteFrequencyData(data);
+		//analyserNode.getByteTimeDomainData(data);
 		
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
@@ -259,9 +273,32 @@
 				ctx.translate(0, maxBarHeight / 1.1);
 				ctx.fillRect(0, 0, BAR_WIDTH, maxBarHeight * percent);
 				ctx.restore();
+
+				
 			}
+
+			
 			
 			drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
+
+			//Switching to waveform data
+			analyserNode.getByteTimeDomainData(data);
+			//Displaying the waveform as an innercircle to the ball, scalable to multiple balls
+			///TODO: Figure out how to only display parts of the waveform, if we want multiple balls
+			for(let i = 0; i < data.length; i++){
+				for(let j = 0; j < numBalls *2; j+=2)
+				{
+					let percent2 = data[i] / 255;
+
+					ctx.save();
+					ctx.fillStyle = "rgba(100,100,100,.3)";
+					ctx.beginPath();
+					ctx.arc(ballCenters[j], ballCenters[j+1], ballRadius * percent2,0,  2*Math.PI, false);
+					ctx.fill();
+					ctx.closePath();
+					ctx.restore();
+				}
+			}
 		}
 		else if (state == "Idle")
 			play.src = "media/" + fighter + "Idle.png";
@@ -328,7 +365,8 @@
 		maxBarHeight = maxBar;
 	
 		ctx.save();
-		
+		ballCenters.push(x);
+		ballCenters.push(y);
 		// set styles
 		ctx.fillStyle = "yellow";
 		ctx.strokeStyle = "black";
@@ -477,6 +515,11 @@
 	<label for="numStars">Number of Stars:</label>
 	<input type="range" min="1" max="7" value="4" class="slider" id="numStars">
 	<span id="starsLabel">???</span>
+
+	<label for="volumeSlider">Volume:</label>
+	<input type="range" id="volumeSlider" min="0" max="2" value="1" step="0.01">
+	<span id="volumeLabel">???</span>
+
 	
 	<button id="fullscreenBut">Full Screen</button>
 	
