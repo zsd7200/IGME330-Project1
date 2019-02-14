@@ -36,7 +36,9 @@
 	"use strict";
 	window.onload = init;
 	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, maxBarHeight, stars, gainNode, numBalls;
-
+	let drawnBalls = [];
+	let ballsToDraw = [];
+	let ballLoc = [];
 	let ballCenters = [];
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
@@ -71,6 +73,7 @@
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
 		const NUM_SAMPLES = 128;
+		numBalls = 1;
 		
 		//Getting elements from the DOM
 		play = document.querySelector("#play"); 
@@ -81,15 +84,25 @@
 		// setup sliders and labels
 		ballRadius = 150;
 		stars = random(1, 7);
-		document.querySelector("#numStars").value = stars;
 		document.querySelector("#radiusLabel").innerHTML = ballRadius;
-		document.querySelector("#starsLabel").innerHTML = stars;
+		
+		// fill up ballstodraw and drawnballs arrays
+		ballsToDraw.push(stars)
+		
+		// fill array
+		for (let i = 0; i < 6; i++)
+			ballsToDraw.push(random(1,7, ballsToDraw));
+			
+		// splice array to remove stars from ballsToDraw array
+		ballsToDraw = ballsToDraw.splice(1, 6);
 		
 		// initialize beamPos with values from CSS
 		beamPos = setBeamPos(getComputedStyle(play).left, getComputedStyle(play).top);
 		
 		// draw big ball in center of canvas
 		drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
+		ballCenters.push([CANVAS_WIDTH/2, CANVAS_HEIGHT/2]);
+		updateBallLoc();
 		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
@@ -106,7 +119,6 @@
 		gainNode.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);
 
-		numBalls = 1;
 		document.querySelector("#volumeLabel").innerHTML = gainNode.gain.value;
 
 		// Starting the play music when the play button is pressed, and setting the state to "Play"
@@ -136,20 +148,26 @@
 			ballRadius = parseInt(e.target.value, 10);
 			document.querySelector("#radiusLabel").innerHTML = parseInt(e.target.value, 10);
 			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-			drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
+			
+			// updateBallLoc updates ballLoc array based on new ballRadius
+			updateBallLoc();
+			
+			// draw initial ball
+			drawBall(ballCenters[0][0], ballCenters[0][1], ballRadius, drawnBalls[0]);
+			
+			for(let i = 0; i < ballLoc.length; i++)
+			{
+					drawBall(ballLoc[i][0], ballLoc[i][1], ballRadius/2, drawnBalls[i+1]);
+			}
 		};
-		
-		document.querySelector("#numStars").oninput = function(e) {
-			stars = parseInt(e.target.value, 10);
-			document.querySelector("#starsLabel").innerHTML = parseInt(e.target.value, 10);
-			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-			drawBall(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars);
-		}
 
 		document.querySelector("#volumeSlider").oninput = function(e) {
 			gainNode.gain.value = e.target.value;
 			document.querySelector("#volumeLabel").innerHTML = Math.round((e.target.value/2 * 100));
 		}
+
+		document.querySelector("#addBall").onclick = addBall;
+		document.querySelector("#remBall").onclick = remBall;
 
 		//Setting up full screen 
 		document.querySelector("#fullscreenBut").onclick = _ =>{
@@ -158,6 +176,41 @@
 
 		// update for beam creation and animation
 		update();
+	}
+	
+	// poc addBall method
+	function addBall()
+	{	
+		if (ballsToDraw.length > 0)
+		{
+			drawBall(ballLoc[numBalls - 1][0], ballLoc[numBalls - 1][1], ballRadius/2, ballsToDraw[ballsToDraw.length - 1]);
+			ballCenters.push([CANVAS_WIDTH/2 + ballRadius * 1.75, CANVAS_HEIGHT/2]);
+			ballsToDraw.pop();
+			numBalls++;
+		}
+	}
+	
+	// todo: clearrect for only section of canvas
+	// use ballCenters?
+	// if we use ballCenters then we can clearrect based on center + radius and just clear that section
+	// at least that's how I think it works
+	// update: can't use ballCenters because of how that's being created, so I made a new ballLoc array
+	function remBall()
+	{
+		
+	}
+	
+	// helper function to update ballLoc array based on ballRadius
+	function updateBallLoc()
+	{
+		ballLoc = [
+			[CANVAS_WIDTH/2 + ballRadius * 1.75, CANVAS_HEIGHT/2],
+			[CANVAS_WIDTH/2 - ballRadius * 1.75, CANVAS_HEIGHT/2],
+			[CANVAS_WIDTH/2 + ballRadius * 1.25, CANVAS_HEIGHT/2 - ballRadius * 1.25],
+			[CANVAS_WIDTH/2 - ballRadius * 1.25, CANVAS_HEIGHT/2 - ballRadius * 1.25],
+			[CANVAS_WIDTH/2 + ballRadius * 1.25, CANVAS_HEIGHT/2 + ballRadius * 1.25],
+			[CANVAS_WIDTH/2 - ballRadius * 1.25, CANVAS_HEIGHT/2 + ballRadius * 1.25]
+		];
 	}
 	
 	// handle setting beam position based on left and top from #play object's CSS values
@@ -363,10 +416,11 @@
 	function drawBall(x, y, rad, stars = 4, maxBar = (rad * 1.1), lineWidth = (rad * .06))
 	{
 		maxBarHeight = maxBar;
+		
+		drawnBalls.push(stars);
 	
 		ctx.save();
-		ballCenters.push(x);
-		ballCenters.push(y);
+		
 		// set styles
 		ctx.fillStyle = "yellow";
 		ctx.strokeStyle = "black";
@@ -457,9 +511,23 @@
 	}
 	
 	// randy helper function
-	function random(min, max)
+	function random(min, max, arr)
 	{
-		return Math.floor((Math.random() * max) + min);
+		let num = Math.floor((Math.random() * max) + min);
+	
+		if (arr == null)
+			return num;
+		
+		
+		// if there is an array passed in, make sure there are no duplicate returns
+		// https://stackoverflow.com/questions/27406377/javascript-generate-random-number-except-some-values?noredirect=1&lq=1
+		
+		let dupe = false; 										// set bool	to false
+		for (let i = 0; i < arr.length; i++)
+			if (num == arr[i])
+				dupe = true;									// if num is equal to a value in the array, change it to true
+				
+		return (dupe == false) ? num : random(min, max, arr);	// if dupe is false, return num, otherwise, call random again
 	}
 	
 	</script>
@@ -511,16 +579,13 @@
 	<label for="ballRad">Ball Radius:</label>
 	<input type="range" min="15" max="300" value="150" class="slider" id="ballRad">
 	<span id="radiusLabel">???</span>
-	
-	<label for="numStars">Number of Stars:</label>
-	<input type="range" min="1" max="7" value="4" class="slider" id="numStars">
-	<span id="starsLabel">???</span>
 
 	<label for="volumeSlider">Volume:</label>
 	<input type="range" id="volumeSlider" min="0" max="2" value="1" step="0.01">
 	<span id="volumeLabel">???</span>
 
-	
+	<button id="addBall">Add Ball</button>
+	<button id="remBall">Remove Ball</button>
 	<button id="fullscreenBut">Full Screen</button>
 	
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
