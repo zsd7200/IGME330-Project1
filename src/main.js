@@ -46,7 +46,7 @@
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
 		// setup sliders and labels
-		ballRadius = 150;
+		ballRadius = 70;
 		stars = random(1, 7);
 		document.querySelector("#radiusLabel").innerHTML = ballRadius;
 		
@@ -82,7 +82,7 @@
 		gainNode.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);
 
-		document.querySelector("#volumeLabel").innerHTML = gainNode.gain.value;
+		document.querySelector("#volumeLabel").innerHTML = 50;
 
 		// Starting the play music when the play button is pressed, and setting the state to "Play"
 		play.onclick = function(e) {
@@ -345,7 +345,7 @@
 		for (let i = 0; i < balls.length; i++)
 		{
 			if (i == 0)
-				balls[i].redraw();
+				balls[i].redraw(ballRadius);
 			else
 				balls[i].redraw(ballRadius/2, ballLoc[i][0], ballLoc[i][1]);
 		}
