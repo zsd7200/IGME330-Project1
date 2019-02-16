@@ -1,27 +1,46 @@
-@font-face {
-	font-family: "FontAwesome";
-	src: url("../media/fa-regular-400.ttf") format("truetype");
+/* Add back original 8px padding that Bootstrap removes */
+body {
+	padding: 8px;
 }
 
-.controls {
-	border: none;
-	background-color: Transparent;
-	font-size: 32pt;
-	padding: 0px;
-}
-
-/* Position pause button */
-#pause { 
+/* Position canvas in center of screen */
+canvas {
 	position: absolute;
-	z-index: 2;
-	left: 600px;
-	top: 150px;
+	left: calc(50% - 350px);
+	top: calc(50% - 250px);
+	box-shadow: 0px 0px 10px grey;
+}
+
+/* Align text to center */
+#controlContainer {
+	text-align:center;
 }
 
 /* Position play button */
 #play {
 	position: absolute;
 	z-index: 2;
-	left: 30px;
-	top: 150px;
+	left: calc(50% - 320px);
+	top: calc(50% - 100px);
+}
+
+/* Position pause button */
+#pause { 
+	position: absolute;
+	z-index: 2;
+	left: calc(50% + 250px);
+	top: calc(50% - 100px);
+}
+
+/* Change size of custom slider */
+.custom-range {
+	width: 10%;
+}
+
+/* Change control button style */
+.controls {
+	border: none;
+	background-color: Transparent;
+	font-size: 32pt;
+	padding: 0px;
 }
