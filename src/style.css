@@ -1,8 +1,15 @@
+.controls {
+	border: none;
+	background-color: Transparent;
+	font-size: 32pt;
+	padding: 0px;
+}
+
 /* Position pause button */
 #pause { 
 	position: absolute;
 	z-index: 2;
-	left: 575px;
+	left: 600px;
 	top: 150px;
 }
 
@@ -10,6 +17,6 @@
 #play {
 	position: absolute;
 	z-index: 2;
-	left: 25px;
+	left: 30px;
 	top: 150px;
 }
