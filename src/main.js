@@ -1,7 +1,7 @@
 	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, playButton, pauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode;
+	let canvas, ctx, play, pause, playButton, canvPlayButton, pauseButton, canvPauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode;
 	let ballsToDraw = [];
 	let ballLoc = [];
 	let balls = [];
@@ -37,6 +37,10 @@
 	{
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
+
+		//Initializing the canvas
+		redrawAll();
+		
 		const NUM_SAMPLES = 128;
 		
 		//Getting elements from the DOM
@@ -46,6 +50,10 @@
 		play.src = "media/gokuIdle.png";
 		pause = new Image();
 		pause.src = "media/friezaIdle.png";
+		canvPauseButton = new Image();
+		canvPauseButton.src = "media/pause.png";
+		canvPlayButton = new Image();
+		canvPlayButton.src = "media/play.png";
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
@@ -70,6 +78,8 @@
 		// draw big ball in center of canvas and push it to array of balls
 		balls.push(new DragonBall(ctx, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars));
 		updateBallLoc();
+
+
 		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
@@ -86,6 +96,7 @@
 		gainNode.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);
 
+		canvas.onmousedown = doMousedown;
 		document.querySelector("#volumeLabel").innerHTML = 50;
 
 		// Starting the play music when the play button is pressed, and setting the state to "Play"
@@ -136,6 +147,24 @@
 
 		// update for beam creation and animation
 		update();
+	}
+
+	function doMousedown(e)
+	{
+		let mouse = getMouse(e);
+		if(mouse.x >50 && mouse.x < 250 && mouse.y >300 && mouse.y < 500)
+		{
+			console.log("here");
+			//if(state == "Idle" || state == "Pause")
+			{
+				//audioCtx.resume(); // needed for chrome to play music
+				audio.play();
+				state = "Play";
+				
+				// this needs to be reset in case the user restarts the same song
+				pause.src = "media/" + enemy + "Idle.png";
+			}
+		}
 	}
 	
 	// addBall method
@@ -246,6 +275,11 @@
 		analyserNode.getByteFrequencyData(data);
 		//analyserNode.getByteTimeDomainData(data);
 		
+		ctx.drawImage(canvPlayButton, 50, 300);
+
+		//ctx.drawImage(canvPauseButton, 50, 300);
+
+
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
 		{
@@ -254,6 +288,9 @@
 
 			// clear everything and redraw all dragon balls
 			redrawAll();
+
+			ctx.drawImage(canvPlayButton, 50, 300);
+
 			
 			// draw darkest color first
 			ctx.fillStyle = beamColors[fighter][0];
@@ -389,4 +426,13 @@
 				dupe = true;									// if num is equal to a value in the array, change it to true
 				
 		return (dupe == false) ? num : random(min, max, arr);	// if dupe is false, return num, otherwise, call random again
+	}
+
+	//Helper function to get mouse location
+	function getMouse(e){
+		let mouse = {}
+		mouse.x = e.pageX - e.target.offsetLeft;
+		mouse.y = e.pageY - e.target.offsetTop;
+		console.log(mouse.x + " " + mouse.y);
+		return mouse;
 	}
