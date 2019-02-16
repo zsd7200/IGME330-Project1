@@ -106,8 +106,9 @@
 		document.querySelector("#songSelector").onchange = musicChange;
 		
 		// handle changing of fighter/enemy
-		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
-		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/" + enemy + "Idle.png"; };
+		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; ctx.clearRect(17, 17, 100, 100); };
+
+		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/" + enemy + "Idle.png"; ctx.clearRect(575, 17, 100, 100); };
 		
 		// handle changing stars and radius based on sliders
 		document.querySelector("#ballRad").oninput = function(e) { 
