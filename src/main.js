@@ -1,7 +1,7 @@
 	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode;
+	let canvas, ctx, play, pause, playButton, pauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode;
 	let ballsToDraw = [];
 	let ballLoc = [];
 	let balls = [];
@@ -40,8 +40,12 @@
 		const NUM_SAMPLES = 128;
 		
 		//Getting elements from the DOM
-		play = document.querySelector("#play"); 
-		pause = document.querySelector("#pause");
+		playButton = document.querySelector("#play"); 
+		pauseButton = document.querySelector("#pause");
+		play = new Image();
+		play.src = "media/gokuIdle.png";
+		pause = new Image();
+		pause.src = "media/friezaIdle.png";
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
@@ -61,7 +65,7 @@
 		ballsToDraw = ballsToDraw.splice(1, 6);
 		
 		// initialize beamPos with values from CSS
-		beamPos = setBeamPos(getComputedStyle(play).left, getComputedStyle(play).top);
+		beamPos = setBeamPos();
 		
 		// draw big ball in center of canvas and push it to array of balls
 		balls.push(new DragonBall(ctx, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars));
@@ -85,19 +89,18 @@
 		document.querySelector("#volumeLabel").innerHTML = 50;
 
 		// Starting the play music when the play button is pressed, and setting the state to "Play"
-		play.onclick = function(e) {
+		playButton.onclick = function(e) {
 			audioCtx.resume(); // needed for chrome to play music
 			audio.play();
 			state = "Play";
 			
 			// this needs to be reset in case the user restarts the same song
 			pause.src = "media/" + enemy + "Idle.png";
-			pause.style.zIndex = 2;
 		};
 
 		// Pausing the music when the pause button is pressed
 		// State is not set to "idle" because this would look jarring, as the beam stays out
-		pause.onclick = function(e) { audio.pause(); audioCtx.suspend(); };
+		pauseButton.onclick = function(e) { audio.pause(); audioCtx.suspend(); };
 
 		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
@@ -221,7 +224,6 @@
 		if (audio.duration == audio.currentTime)
 		{
 			pause.src = "media/" + enemy + "Idle.png";
-			pause.style.zIndex = 2;
 		}
 		
 		// handle door.wav since it's not an mp3 lmao
@@ -310,13 +312,14 @@
 		else if (state == "Idle")
 			play.src = "media/" + fighter + "Idle.png";
 		
+		drawFighters();
+		
 		// if song is over, change enemy state to "dmgd" and add beamcap
 		if(audio.duration == audio.currentTime)
 		{
 			pause.src = "media/" + enemy + "Dmgd.png";
 			let beamCap = new Image();
 			beamCap.src = "media/" + beamColors[fighter][3] + "BeamCap.png";
-			pause.style.zIndex = -1;
 			ctx.drawImage(beamCap, 600, beamPos[fighter][1] - 13);
 		}
 	}
@@ -333,6 +336,18 @@
 			[CANVAS_WIDTH/2 + ballRadius * 1.25, CANVAS_HEIGHT/2 + ballRadius * 1.25],
 			[CANVAS_WIDTH/2 - ballRadius * 1.25, CANVAS_HEIGHT/2 + ballRadius * 1.25]
 		];
+	}
+	
+	// helper function to draw fighters
+	function drawFighters()
+	{
+		// draw fighters
+		ctx.drawImage(play, 17, 17);
+		
+		ctx.save();
+		ctx.scale(-1, 1);
+		ctx.drawImage(pause, -662, 17);
+		ctx.restore();
 	}
 	
 	// helper function to redraw balls

@@ -1,13 +1,9 @@
-/* Add back original 8px margin */
-body{ margin: 8px; }
-
 /* Position enemy and flip it horizontally */
 #pause { 
 	position: absolute;
 	z-index: 2;
 	left: 575px;
-	top: 25px;
-	transform: scaleX(-1); 
+	top: 150px;
 }
 
 /* Position fighter */
@@ -15,5 +11,5 @@ body{ margin: 8px; }
 	position: absolute;
 	z-index: 2;
 	left: 25px;
-	top: 25px;
+	top: 150px;
 }
