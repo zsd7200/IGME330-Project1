@@ -238,7 +238,7 @@
 
 	// used for creation of beam
 	function update()
-	{
+	{	
 		requestAnimationFrame(update);
 		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
 		//Showing frequency 
@@ -355,6 +355,10 @@
 	{
 		// clear everything
 		ctx.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+		
+		// draw background
+		ctx.fillStyle = "white";
+		ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 		
 		// redraw everything
 		for (let i = 0; i < balls.length; i++)

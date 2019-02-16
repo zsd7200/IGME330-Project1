@@ -1,4 +1,4 @@
-/* Position enemy and flip it horizontally */
+/* Position pause button */
 #pause { 
 	position: absolute;
 	z-index: 2;
@@ -6,7 +6,7 @@
 	top: 150px;
 }
 
-/* Position fighter */
+/* Position play button */
 #play {
 	position: absolute;
 	z-index: 2;
