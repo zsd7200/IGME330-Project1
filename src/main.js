@@ -3,7 +3,7 @@ var app = app || {}
 app.main = (function () {	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, playButton, canvPlayButton, pauseButton, canvPauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode;
+	let canvas, ctx, play, pause, playButton, canvPlayButton, pauseButton, canvPauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode, audioCtx;
 	let ballsToDraw = [];
 	let ballLoc = [];
 	let balls = [];
@@ -86,7 +86,7 @@ app.main = (function () {
 		enemy = "frieza";
 		ctx.fillStyle = beamColors[fighter];
 		
-		let audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
+		audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
 		let sourceNode = audioCtx.createMediaElementSource(audio); 
 		analyserNode = audioCtx.createAnalyser();
 		analyserNode.fftSize = NUM_SAMPLES;
@@ -157,7 +157,7 @@ app.main = (function () {
 			console.log("here");
 			//if(state == "Idle" || state == "Pause")
 			{
-				//audioCtx.resume(); // needed for chrome to play music
+				audioCtx.resume(); // needed for chrome to play music
 				audio.play();
 				state = "Play";
 				
