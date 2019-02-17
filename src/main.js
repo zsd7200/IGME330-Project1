@@ -9,7 +9,7 @@ app.main = (function () {
 	let balls = [];
 	const buttonLoc = {
 		"play" : [100, 120],
-		"pause" : [500, 120]
+		"pause" : [525, 120]
 	};
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
