@@ -31,17 +31,25 @@ canvas { box-shadow: 0px 0px 10px grey; }
 	margin-left: 10px;
 }
 
+/* Change nav item styles */
+.nav-item a:link { color: white; }
+.nav-item a:visited { color: white; }
+.nav-item a:hover { background-color: rgba(0,0,0,0.2); }
+.nav-item a:active { color: rgb(230,230,230); background-color: rgba(0,0,0,0.4); }
+
 /* Change size of custom slider */
 .custom-range {
 	width: 40%;
+	padding-top: 13px;
 }
 
-.custom-range::-webkit-slider-thumb {
-	background: red;
-}
-.custom-range::-moz-range-thumb {
-	background: red;
-}
+/* Style custom slider to better fit the page */
+.custom-range::-webkit-slider-thumb, .custom-range::-webkit-slider-thumb:active { background: red; }
+.custom-range:focus::-webkit-slider-thumb { box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(255, 123, 0, .25); }
+
+.custom-range::-moz-range-thumb, .custom-range::-moz-range-thumb:active { background: red; }
+.custom-range:focus::-moz-range-thumb { box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(255, 123, 0, .25);}
+
 
 /* Change control button style */
 .controls {
