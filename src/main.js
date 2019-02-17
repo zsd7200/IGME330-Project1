@@ -3,10 +3,14 @@ var app = app || {}
 app.main = (function () {	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, playButton, canvPlayButton, pauseButton, canvPauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode, audioCtx;
+	let canvas, ctx, play, pause, canvPlayButton, canvPauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode, audioCtx;
 	let ballsToDraw = [];
 	let ballLoc = [];
 	let balls = [];
+	const buttonLoc = {
+		"play" : [100, 120],
+		"pause" : [500, 120]
+	};
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
 	
@@ -46,16 +50,14 @@ app.main = (function () {
 		const NUM_SAMPLES = 128;
 		
 		//Getting elements from the DOM
-		playButton = document.querySelector("#play"); 
-		pauseButton = document.querySelector("#pause");
 		play = new Image();
 		play.src = "media/gokuIdle.png";
 		pause = new Image();
 		pause.src = "media/friezaIdle.png";
 		canvPauseButton = new Image();
-		canvPauseButton.src = "media/pause.png";
+		canvPauseButton.src = "media/pause_small.png";
 		canvPlayButton = new Image();
-		canvPlayButton.src = "media/play.png";
+		canvPlayButton.src = "media/play_small.png";
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
@@ -99,20 +101,6 @@ app.main = (function () {
 		canvas.onmousedown = doMousedown;
 		document.querySelector("#volumeLabel").innerHTML = 50;
 
-		// Starting the play music when the play button is pressed, and setting the state to "Play"
-		playButton.onclick = function(e) {
-			audioCtx.resume(); // needed for chrome to play music
-			audio.play();
-			state = "Play";
-			
-			// this needs to be reset in case the user restarts the same song
-			pause.src = "media/" + enemy + "Idle.png";
-		};
-
-		// Pausing the music when the pause button is pressed
-		// State is not set to "idle" because this would look jarring, as the beam stays out
-		pauseButton.onclick = function(e) { audio.pause(); audioCtx.suspend(); };
-
 		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
 		
@@ -149,22 +137,42 @@ app.main = (function () {
 		update();
 	}
 
+	// play music and change state to play
+	function playMusic()
+	{
+		audioCtx.resume(); // needed for chrome to play music
+		audio.play();
+		state = "Play";
+		
+		// this needs to be reset in case the user restarts the same song
+		pause.src = "media/" + enemy + "Idle.png";
+	}
+	
+	// Pausing the music when the pause button is pressed
+	// State is not set to "idle" because this would look jarring, as the beam stays out
+	function pauseMusic()
+	{
+		audio.pause(); 
+		audioCtx.suspend();
+	}
+
 	function doMousedown(e)
 	{
 		let mouse = app.utilities.getMouse(e);
-		if(mouse.x >50 && mouse.x < 250 && mouse.y >300 && mouse.y < 500)
+		console.log(buttonLoc["play"][0] + canvPlayButton.width);
+		if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + canvPlayButton.width && mouse.y > buttonLoc["play"][1] && mouse.y < buttonLoc["play"][0] + canvPlayButton.height)
 		{
 			console.log("here");
-			//if(state == "Idle" || state == "Pause")
-			{
-				audioCtx.resume(); // needed for chrome to play music
-				audio.play();
-				state = "Play";
-				
-				// this needs to be reset in case the user restarts the same song
-				pause.src = "media/" + enemy + "Idle.png";
-			}
+			playMusic();
 		}
+		
+		if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + canvPauseButton.width && mouse.y > buttonLoc["pause"][1] && mouse.y < buttonLoc["pause"][0] + canvPauseButton.height)
+		{
+			console.log("there");
+			pauseMusic();
+		}
+
+
 	}
 	
 	// addBall method
@@ -275,10 +283,8 @@ app.main = (function () {
 		analyserNode.getByteFrequencyData(data);
 		//analyserNode.getByteTimeDomainData(data);
 		
-		ctx.drawImage(canvPlayButton, 50, 300);
-
-		//ctx.drawImage(canvPauseButton, 50, 300);
-
+		ctx.drawImage(canvPlayButton, buttonLoc["play"][0], buttonLoc["play"][1]);
+		ctx.drawImage(canvPauseButton, buttonLoc["pause"][0], buttonLoc["pause"][1]);
 
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
@@ -289,7 +295,9 @@ app.main = (function () {
 			// clear everything and redraw all dragon balls
 			redrawAll();
 
-			ctx.drawImage(canvPlayButton, 50, 300);
+			ctx.drawImage(canvPlayButton, buttonLoc["play"][0], buttonLoc["play"][1]);
+			ctx.drawImage(canvPauseButton, buttonLoc["pause"][0], buttonLoc["pause"][1]);
+			//ctx.drawImage(canvPauseButton, buttonLoc["pause"[0], buttonLoc["pause"][1]);
 			
 			// draw darkest color first
 			ctx.fillStyle = beamColors[fighter][0];

@@ -31,22 +31,6 @@ canvas { box-shadow: 0px 0px 10px grey; }
 	margin-left: 10px;
 }
 
-/* Position play button */
-#play {
-	position: absolute;
-	z-index: 2;
-	left: calc(50% - 480px);
-	top: calc(50% - 200px);
-}
-
-/* Position pause button */
-#pause { 
-	position: absolute;
-	z-index: 2;
-	left: calc(50% + 90px);
-	top: calc(50% - 200px);
-}
-
 /* Change size of custom slider */
 .custom-range {
 	width: 40%;
