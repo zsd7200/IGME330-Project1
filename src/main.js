@@ -389,9 +389,18 @@ app.main = (function () {
 	// helper function to draw fighters
 	function drawFighters()
 	{
-		// draw fighters
+		if (state == "Idle")
+		{
+			// fill background behind fighter if music hasn't started
+			ctx.fillStyle = "white";
+			ctx.fillRect(17, 17, 100, 100);
+			ctx.fillRect(575, 17, 100, 100);
+		}
+
+		// draw fighter
 		ctx.drawImage(play, 17, 17);
 		
+		// flip and draw enemy
 		ctx.save();
 		ctx.scale(-1, 1);
 		ctx.drawImage(pause, -662, 17);
