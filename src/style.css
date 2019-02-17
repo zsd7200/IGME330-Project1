@@ -36,6 +36,13 @@ canvas { box-shadow: 0px 0px 10px grey; }
 	width: 40%;
 }
 
+.custom-range::-webkit-slider-thumb {
+	background: red;
+}
+.custom-range::-moz-range-thumb {
+	background: red;
+}
+
 /* Change control button style */
 .controls {
 	border: none;
