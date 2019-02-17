@@ -15,12 +15,16 @@
 	<script src="src/loader.js"></script>
 </head>
 <body>
+<div id="flex-container">
+
+	<div class="pad"></div>
+
 	<canvas width=700 height=600>Browser does not support canvas.</canvas>
 	
 	<br>
 	
+	<div id="controlContainer">
 	<audio src="media/chala.mp3" id="audio"></audio>
-	<section id="controlContainer">
 	<label>Song:
 			<select class="form-control" id="songSelector">
 				<option value="chala" selected>Head Cha La</option>
@@ -28,7 +32,9 @@
 				<option value="dmp">Digging My Potato</option>
 				<option value="door">door</option>
 			</select>
-		</label>
+	</label>
+	
+	<br>
 		
 	<button id="play" class="controls"><i class="far fa-play-circle"></i></button>
 	<label>Fighter:
@@ -58,22 +64,31 @@
 			</select>
 	</label>
 	
+	<br>
+	
 	<label for="ballRad">Ball Radius:</label>
 	<input type="range" id="ballRad" class="custom-range" min="15" max="158" value="70">
 	<span id="radiusLabel">???</span>
-
+	
+	<br>
+	
 	<label for="volumeSlider">Volume:</label>
 	<input type="range" id="volumeSlider" class="custom-range" min="0" max="2" value="1" step="0.01">
 	<span id="volumeLabel">???</span>
 
-	<button id="addBall" class="btn btn-dark" v-b-tooltip.hover title="Add an extra Dragon Ball around the center.">Add Ball</button>
-	<button id="remBall" class="btn btn-dark" v-b-tooltip.hover title="Remove a Dragon Ball around the center.">Remove Ball</button>
-	<button id="fullscreenBut" class="btn btn-dark" v-b-tooltip.hover title="Make the visualiZer full screen">Full Screen</button>
+	<br>
 	
-	</section>
+	<button id="addBall" class="btn btn-dark" title="Add an extra Dragon Ball around the center.">Add Ball</button>
+	<button id="remBall" class="btn btn-dark" title="Remove a Dragon Ball around the center.">Remove Ball</button>
+	<button id="fullscreenBut" class="btn btn-dark" title="Make the visualiZer full screen">Full Screen</button>
+	
+	</div>
+	
+	<div class="pad"></div>
 	
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js" integrity="sha384-7aThvCh9TypR7fIc2HV4O/nFMVCBwyIUKL8XCtKE+8xgCgl/PQGuFsvShjr74PBp" crossorigin="anonymous"></script>
+</div>
 </body>
 </html>

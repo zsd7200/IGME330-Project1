@@ -1,40 +1,55 @@
-/* Add back original 8px padding that Bootstrap removes */
-body {
-	padding: 8px;
-}
+/* Add background gradient */
+body { background: linear-gradient(rgb(255, 180, 43), rgb(188, 122, 0)); }
 
 /* Position canvas in center of screen */
-canvas {
-	position: absolute;
-	left: calc(50% - 350px);
-	top: calc(50% - 250px);
-	box-shadow: 0px 0px 10px grey;
+canvas { box-shadow: 0px 0px 10px grey; }
+
+/* Left and right padding for flexbox container */
+.pad { width: 10%; }
+
+/* Main flex container properties */
+/* Flexbox resource: https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */
+#flex-container {
+	/* Grid line code: https://codepen.io/jasonadelia/pen/DnrAe */
+    background-color: Transparent;
+    background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .5) 25%, rgba(255, 255, 255, .5) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .5) 75%, rgba(255, 255, 255, .5) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .5) 25%, rgba(255, 255, 255, .5) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .5) 75%, rgba(255, 255, 255, .5) 76%, transparent 77%, transparent);
+	background-size: 50px 50px;
+	
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-/* Align text to center */
+/* Style container for controls */
 #controlContainer {
-	text-align:center;
+	color: white;
+	background-color: rgba(0,0,0,0.5);
+	border-radius: 8px;
+	padding: 10px;
+	max-width: 24%;
+	margin-left: 10px;
 }
 
 /* Position play button */
 #play {
 	position: absolute;
 	z-index: 2;
-	left: calc(50% - 320px);
-	top: calc(50% - 100px);
+	left: calc(50% - 480px);
+	top: calc(50% - 200px);
 }
 
 /* Position pause button */
 #pause { 
 	position: absolute;
 	z-index: 2;
-	left: calc(50% + 250px);
-	top: calc(50% - 100px);
+	left: calc(50% + 90px);
+	top: calc(50% - 200px);
 }
 
 /* Change size of custom slider */
 .custom-range {
-	width: 10%;
+	width: 40%;
 }
 
 /* Change control button style */

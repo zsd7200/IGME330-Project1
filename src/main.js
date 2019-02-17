@@ -80,8 +80,6 @@ app.main = (function () {
 		// draw big ball in center of canvas and push it to array of balls
 		balls.push(new DragonBall(ctx, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars));
 		updateBallLoc();
-
-
 		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
@@ -292,7 +290,6 @@ app.main = (function () {
 			redrawAll();
 
 			ctx.drawImage(canvPlayButton, 50, 300);
-
 			
 			// draw darkest color first
 			ctx.fillStyle = beamColors[fighter][0];
