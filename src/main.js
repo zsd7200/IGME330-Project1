@@ -156,6 +156,9 @@ app.main = (function () {
 		audioCtx.suspend();
 	}
 
+	// poc play/pause button on canvas functionality
+	// does NOT work in fullscreen
+	// buttons show, but they move, so it does not work atm
 	function doMousedown(e)
 	{
 		let mouse = app.utilities.getMouse(e);
