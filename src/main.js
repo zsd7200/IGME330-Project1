@@ -162,16 +162,13 @@ app.main = (function () {
 	function doMousedown(e)
 	{
 		let mouse = app.utilities.getMouse(e);
-		console.log(buttonLoc["play"][0] + canvPlayButton.width);
 		if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + canvPlayButton.width && mouse.y > buttonLoc["play"][1] && mouse.y < buttonLoc["play"][0] + canvPlayButton.height)
 		{
-			console.log("here");
 			playMusic();
 		}
 		
 		if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + canvPauseButton.width && mouse.y > buttonLoc["pause"][1] && mouse.y < buttonLoc["pause"][0] + canvPauseButton.height)
 		{
-			console.log("there");
 			pauseMusic();
 		}
 
