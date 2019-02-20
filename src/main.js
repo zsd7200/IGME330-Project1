@@ -3,7 +3,16 @@ var app = app || {}
 app.main = (function () {	
 	"use strict";
 	window.onload = init;
-	let canvas, ctx, play, pause, canvPlayButton, canvPauseButton, audio, state, fighter, enemy, beamPos, analyserNode, ballRadius, stars, gainNode, audioCtx;
+	let canvas, ctx, 
+		play, pause, 
+		canvPlayButton, canvPauseButton, 
+		audio, state, 
+		fighter, enemy, 
+		bg, bgName, bgColors, 
+		beamPos, 
+		ballRadius, stars, 
+		analyserNode, gainNode, audioCtx;
+		
 	let ballsToDraw = [];
 	let ballLoc = [];
 	let balls = [];
@@ -11,6 +20,7 @@ app.main = (function () {
 		"play" : [100, 120],
 		"pause" : [525, 120]
 	};
+	
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
 	
@@ -44,16 +54,16 @@ app.main = (function () {
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
 
-		//Initializing the canvas
-		redrawAll();
-		
 		const NUM_SAMPLES = 128;
 		
 		//Getting elements from the DOM
 		play = new Image();
-		play.src = "media/gokuIdle.png";
+		play.src = "media/fighters/gokuIdle.png";
 		pause = new Image();
-		pause.src = "media/friezaIdle.png";
+		pause.src = "media/fighters/friezaIdle.png";
+		bg = new Image();
+		bg.src = "media/bg/worldTournament.png";
+		bgColors = app.utilities.setBgColors(ctx);
 		canvPauseButton = new Image();
 		canvPauseButton.src = "media/pause_small.png";
 		canvPlayButton = new Image();
@@ -77,7 +87,7 @@ app.main = (function () {
 		ballsToDraw = ballsToDraw.splice(1, 6);
 		
 		// initialize beamPos with values from CSS
-		beamPos = setBeamPos();
+		beamPos = app.utilities.setBeamPos();
 		
 		// draw big ball in center of canvas and push it to array of balls
 		balls.push(new DragonBall(ctx, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars));
@@ -86,7 +96,8 @@ app.main = (function () {
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
 		enemy = "frieza";
-		ctx.fillStyle = beamColors[fighter];
+		bgName = "worldTournament";
+		//ctx.fillStyle = beamColors[fighter];
 		
 		audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
 		let sourceNode = audioCtx.createMediaElementSource(audio); 
@@ -105,9 +116,11 @@ app.main = (function () {
 		document.querySelector("#songSelector").onchange = musicChange;
 		
 		// handle changing of fighter/enemy
-		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; ctx.clearRect(17, 17, 100, 100); };
+		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
 
-		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/" + enemy + "Idle.png"; ctx.clearRect(575, 17, 100, 100); };
+		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/fighters/" + enemy + "Idle.png"; };
+		
+		document.querySelector("#bgSelector").onchange = function (e) { bgName = e.target.value; redrawAll(); };
 		
 		// handle changing stars and radius based on sliders
 		document.querySelector("#ballRad").oninput = function(e) { 
@@ -132,7 +145,7 @@ app.main = (function () {
 		document.querySelector("#fullscreenBut").onclick = _ =>{
 				requestFullscreen(canvas);
 			};
-
+	
 		// update for beam creation and animation
 		update();
 	}
@@ -145,7 +158,7 @@ app.main = (function () {
 		state = "Play";
 		
 		// this needs to be reset in case the user restarts the same song
-		pause.src = "media/" + enemy + "Idle.png";
+		pause.src = "media/fighters/" + enemy + "Idle.png";
 	}
 	
 	// Pausing the music when the pause button is pressed
@@ -212,27 +225,6 @@ app.main = (function () {
 			redrawAll();
 		}
 	}
-	
-	// handle setting beam position based on left and top from #play object's CSS values
-	function setBeamPos(left = 25, top = 25)
-	{
-		// beamPos[fighter][0] = x
-		// beamPos[fighter][1] = y
-		// width is changed based on time left in song
-		// height is BEAM_HEIGHT
-		let tempPos = {
-			"goku" : [60 + parseInt(left, 10), 30 + parseInt(top, 10)],
-			"vegeta" : [60 + parseInt(left, 10), 20 + parseInt(top, 10)],
-			"teenGohan" : [55 + parseInt(left, 10), 35 + parseInt(top, 10)],
-			"futureTrunks" : [60 + parseInt(left, 10), 11 + parseInt(top, 10)],
-			"android18" : [70 + parseInt(left, 10), 20 + parseInt(top, 10)],
-			"cell" : [67 + parseInt(left, 10), 22 + parseInt(top, 10)],
-			"majinbuu" : [68 + parseInt(left, 10), 25 + parseInt(top, 10)],
-			"frieza" : [70 + parseInt(left, 10), 20 + parseInt(top, 10)]				
-		};
-		
-		return tempPos;
-	}
 
 	function requestFullscreen(element)
 	{
@@ -261,14 +253,14 @@ app.main = (function () {
 		// return enemy to idle state and return the enemy to its proper z-index so it can be clicked
 		if (audio.duration == audio.currentTime)
 		{
-			pause.src = "media/" + enemy + "Idle.png";
+			pause.src = "media/fighters/" + enemy + "Idle.png";
 		}
 		
 		// handle door.wav since it's not an mp3 lmao
 		if (e.target.value != "door")
-			audio.src = "media/" + e.target.value + ".mp3";
+			audio.src = "media/music/" + e.target.value + ".mp3";
 		else
-			audio.src = "media/door.wav";
+			audio.src = "media/music/door.wav";
 		
 		// wipe everything and redraw balls
 		redrawAll();
@@ -282,22 +274,15 @@ app.main = (function () {
 		//Showing frequency 
 		analyserNode.getByteFrequencyData(data);
 		//analyserNode.getByteTimeDomainData(data);
-		
-		ctx.drawImage(canvPlayButton, buttonLoc["play"][0], buttonLoc["play"][1]);
-		ctx.drawImage(canvPauseButton, buttonLoc["pause"][0], buttonLoc["pause"][1]);
+
+		// clear everything and redraw all dragon balls
+		redrawAll();
 
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
 		{
 			let percent = audio.currentTime / audio.duration;
-			play.src = "media/" + fighter + "Play.png";
-
-			// clear everything and redraw all dragon balls
-			redrawAll();
-
-			ctx.drawImage(canvPlayButton, buttonLoc["play"][0], buttonLoc["play"][1]);
-			ctx.drawImage(canvPauseButton, buttonLoc["pause"][0], buttonLoc["pause"][1]);
-			//ctx.drawImage(canvPauseButton, buttonLoc["pause"[0], buttonLoc["pause"][1]);
+			play.src = "media/fighters/" + fighter + "Play.png";
 			
 			// draw darkest color first
 			ctx.fillStyle = beamColors[fighter][0];
@@ -321,7 +306,7 @@ app.main = (function () {
 				percent = percent < .07 ? .07 : percent;
 				
 				ctx.save();
-				ctx.fillStyle = beamColors[fighter][0];
+				ctx.fillStyle = beamColors[fighter][2];
 				ctx.translate(balls[0].x, balls[0].y);		// behind center ball
 				ctx.scale(1, -1);
 				
@@ -329,6 +314,12 @@ app.main = (function () {
 				ctx.rotate(rotationAmount);
 				ctx.translate(0, balls[0].maxBar / 1.1);
 				ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
+				
+				// stroke rects so they can be seen on any bg
+				ctx.lineWidth = BAR_WIDTH / 4;
+				ctx.strokeStyle = beamColors[fighter][0];
+				ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
+				
 				ctx.restore();
 			}
 			
@@ -355,14 +346,15 @@ app.main = (function () {
 			}
 		}
 		else if (state == "Idle")
-			play.src = "media/" + fighter + "Idle.png";
+			play.src = "media/fighters/" + fighter + "Idle.png";
 		
+		// necessary so fighters are always above beam
 		drawFighters();
 		
 		// if song is over, change enemy state to "dmgd" and add beamcap
 		if(audio.duration == audio.currentTime)
 		{
-			pause.src = "media/" + enemy + "Dmgd.png";
+			pause.src = "media/fighters/" + enemy + "Dmgd.png";
 			let beamCap = new Image();
 			beamCap.src = "media/" + beamColors[fighter][3] + "BeamCap.png";
 			ctx.drawImage(beamCap, 600, beamPos[fighter][1] - 13);
@@ -372,49 +364,57 @@ app.main = (function () {
 	// helper function to update ballLoc array based on ballRadius
 	function updateBallLoc()
 	{
+		let ballX = CANVAS_WIDTH/2;
+		let ballY = CANVAS_HEIGHT/2;
+		
 		ballLoc = [
-			[CANVAS_WIDTH/2, CANVAS_HEIGHT/2],
-			[CANVAS_WIDTH/2 + ballRadius * 1.75, CANVAS_HEIGHT/2],
-			[CANVAS_WIDTH/2 - ballRadius * 1.75, CANVAS_HEIGHT/2],
-			[CANVAS_WIDTH/2 + ballRadius * 1.25, CANVAS_HEIGHT/2 - ballRadius * 1.25],
-			[CANVAS_WIDTH/2 - ballRadius * 1.25, CANVAS_HEIGHT/2 - ballRadius * 1.25],
-			[CANVAS_WIDTH/2 + ballRadius * 1.25, CANVAS_HEIGHT/2 + ballRadius * 1.25],
-			[CANVAS_WIDTH/2 - ballRadius * 1.25, CANVAS_HEIGHT/2 + ballRadius * 1.25]
+			[ballX, ballY],
+			[ballX + ballRadius * 1.75, ballY],
+			[ballX - ballRadius * 1.75, ballY],
+			[ballX + ballRadius * 1.25, ballY - ballRadius * 1.25],
+			[ballX - ballRadius * 1.25, ballY - ballRadius * 1.25],
+			[ballX + ballRadius * 1.25, ballY + ballRadius * 1.25],
+			[ballX - ballRadius * 1.25, ballY + ballRadius * 1.25]
 		];
+	}
+	
+	// helper function to draw background
+	function drawBg()
+	{
+		if (bg.src != "media/bg/" + bgName + ".png")
+			bg.src = "media/bg/" + bgName + ".png";
+		
+		ctx.fillStyle = bgColors[bgName];
+		ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		ctx.drawImage(bg, (CANVAS_WIDTH - bg.width) / 2, CANVAS_HEIGHT - bg.height);
+		
+		// redraw buttons
+		ctx.drawImage(canvPlayButton, buttonLoc["play"][0], buttonLoc["play"][1]);
+		ctx.drawImage(canvPauseButton, buttonLoc["pause"][0], buttonLoc["pause"][1]);
 	}
 	
 	// helper function to draw fighters
 	function drawFighters()
 	{
-		if (state == "Idle")
-		{
-			// fill background behind fighter if music hasn't started
-			ctx.fillStyle = "white";
-			ctx.fillRect(17, 17, 100, 100);
-			ctx.fillRect(575, 17, 100, 100);
-		}
-
 		// draw fighter
-		ctx.drawImage(play, 17, 17);
+		ctx.drawImage(play, 17, CANVAS_HEIGHT - 120);
 		
 		// flip and draw enemy
 		ctx.save();
 		ctx.scale(-1, 1);
-		ctx.drawImage(pause, -662, 17);
+		ctx.drawImage(pause, -662, CANVAS_HEIGHT - 120);
 		ctx.restore();
 	}
 	
 	// helper function to redraw balls
 	function redrawAll()
 	{
-		// clear everything
-		ctx.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+		// redraw background
+		drawBg();
 		
-		// draw background
-		ctx.fillStyle = "white";
-		ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		// fighters are redrawn separately so they can be on top of beam at all times
 		
-		// redraw everything
+		// redraw dragon balls
 		for (let i = 0; i < balls.length; i++)
 		{
 			if (i == 0)

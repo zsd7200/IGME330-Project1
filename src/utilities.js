@@ -31,9 +31,56 @@ app.utilities = (function () {
 		//console.log(mouse.x + " " + mouse.y);
 		return mouse;
     }
+	
+	// helper function to handle gradient backgrounds
+	function grad(ctx, topColor, bottomColor, loc = 300)
+	{
+		let grd = ctx.createLinearGradient(0, 0, 0, loc);
+		grd.addColorStop(0, topColor);
+		grd.addColorStop(1, bottomColor);
+		return grd;
+	}
+	
+	// helper function to set up bgColors array
+	function setBgColors(ctx)
+	{		
+		let tempColors = {
+			"worldTournament" : grad(ctx, "#0D90BF", "#0b749a"),
+			"namek" : grad(ctx, "#52ce73", "#efef9c", 500),
+			"newPlanetVegeta" : grad(ctx, "#00106b", "#0084bd"),
+			"iceField" : grad(ctx, "#734ad6", "#dec6f7", 600),
+			"westCity" : grad(ctx, "#087bad", "#c6d6ce", 700),
+			"field" : grad(ctx, "#a563de", "#fff7bd", 600)
+		};
+		return tempColors;
+	}
+	
+	// handle setting beam position based on fighter pos
+	function setBeamPos(left = 25, top = 488)
+	{
+		// beamPos[fighter][0] = x
+		// beamPos[fighter][1] = y
+		// width is changed based on time left in song
+		// height is BEAM_HEIGHT
+		let tempPos = {
+			"goku" : [60 + left, 30 + top],
+			"vegeta" : [60 + left, 20 + top],
+			"teenGohan" : [55 + left, 35 + top],
+			"futureTrunks" : [60 + left, 11 + top],
+			"android18" : [70 + left, 20 + top],
+			"cell" : [67 + left, 22 + top],
+			"majinbuu" : [68 + left, 25 + top],
+			"frieza" : [70 + left, 20 + top]				
+		};
+		
+		return tempPos;
+	}
     
     return{
         random,
-        getMouse
+        getMouse,
+		grad,
+		setBgColors,
+		setBeamPos
     }
 })();
