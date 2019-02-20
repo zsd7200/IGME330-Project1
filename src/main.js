@@ -43,7 +43,9 @@ app.main = (function () {
 		"vegeta" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"],
 		"teenGohan" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
 		"futureTrunks" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
+		"gotenks" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
 		"android18" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
+		"dad" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],
 		"cell" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],
 		"majinbuu" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"],
 		"frieza" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"]				

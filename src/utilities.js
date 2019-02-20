@@ -67,7 +67,9 @@ app.utilities = (function () {
 			"vegeta" : [60 + left, 20 + top],
 			"teenGohan" : [55 + left, 35 + top],
 			"futureTrunks" : [60 + left, 11 + top],
+			"gotenks" : [53 + left, 36 + top],
 			"android18" : [70 + left, 20 + top],
+			"dad" : [62 + left, 37 + top],
 			"cell" : [67 + left, 22 + top],
 			"majinbuu" : [68 + left, 25 + top],
 			"frieza" : [70 + left, 20 + top]				
