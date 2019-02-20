@@ -7,7 +7,7 @@ app.main = (function () {
 		play, pause, 
 		canvPlayButton, canvPauseButton, 
 		audio, state, 
-		fighter, enemy, 
+		fighter, enemy, shen,
 		bg, bgName, bgColors, 
 		beamPos, 
 		ballRadius, stars, 
@@ -17,9 +17,10 @@ app.main = (function () {
 	let ballLoc = [];
 	let balls = [];
 	const buttonLoc = {
-		"play" : [100, 120],
-		"pause" : [525, 120]
+		"play" : [100, 176],
+		"pause" : [525, 176]
 	};
+	let shenDraw = [false, false]; // shenDraw[0] is whether or not it is currently drawing, shenDraw[1] is whether or not to always draw it
 	
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
@@ -66,10 +67,10 @@ app.main = (function () {
 		bg = new Image();
 		bg.src = "media/bg/worldTournament.png";
 		bgColors = app.utilities.setBgColors(ctx);
+		shen = new Image();
+		shen.src = "media/other/shenron.png";
 		canvPauseButton = new Image();
-		canvPauseButton.src = "media/pause_small.png";
-		canvPlayButton = new Image();
-		canvPlayButton.src = "media/play_small.png";
+		canvPauseButton.src = "media/other/pause_small.png";
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
@@ -139,9 +140,29 @@ app.main = (function () {
 			gainNode.gain.value = e.target.value;
 			document.querySelector("#volumeLabel").innerHTML = Math.round((e.target.value/2 * 100));
 		}
-
 		document.querySelector("#addBall").onclick = addBall;
 		document.querySelector("#remBall").onclick = remBall;
+		document.querySelector("#shenBut").onclick = function(e) {
+			let timer = 0;
+			shenDraw[0] = true;
+			document.querySelector("#remBall").disabled = true;
+			
+			let fade = setInterval(function() {
+				ctx.clearRect(CANVAS_WIDTH/2 - 200, 0, shen.width, shen.height);
+				redrawAll();
+				timer += 0.01;
+				ctx.globalAlpha = timer;
+				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+				ctx.globalAlpha = 1;
+				
+				if (timer >= 1)
+				{
+					clearInterval(fade);
+					shenDraw[0] = false;
+					shenDraw[1] = true;
+				}
+			}, 25);
+		};
 
 		//Setting up full screen 
 		document.querySelector("#fullscreenBut").onclick = _ =>{
@@ -177,12 +198,13 @@ app.main = (function () {
 	function doMousedown(e)
 	{
 		let mouse = app.utilities.getMouse(e);
-		if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + canvPlayButton.width && mouse.y > buttonLoc["play"][1] && mouse.y < buttonLoc["play"][0] + canvPlayButton.height)
+		
+		if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + 64 && mouse.y > buttonLoc["play"][1] - 64 && mouse.y < buttonLoc["play"][1])
 		{
 			playMusic();
 		}
 		
-		if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + canvPauseButton.width && mouse.y > buttonLoc["pause"][1] && mouse.y < buttonLoc["pause"][0] + canvPauseButton.height)
+		if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + 64 && mouse.y > buttonLoc["pause"][1] - 64 && mouse.y < buttonLoc["pause"][1])
 		{
 			pauseMusic();
 		}
@@ -202,6 +224,9 @@ app.main = (function () {
 			// pop star count from ballsTODraw array
 			ballsToDraw.pop();
 		}
+		
+		if (ballsToDraw.length == 0)
+			document.querySelector("#shenBut").disabled = false;
 	}
 	
 	// remove ball method
@@ -226,6 +251,9 @@ app.main = (function () {
 			// wipe everything and redraw
 			redrawAll();
 		}
+		
+		if (document.querySelector("#shenBut").disabled == false)
+			document.querySelector("#shenBut").disabled = true;
 	}
 
 	function requestFullscreen(element)
@@ -278,7 +306,8 @@ app.main = (function () {
 		//analyserNode.getByteTimeDomainData(data);
 
 		// clear everything and redraw all dragon balls
-		redrawAll();
+		if (shenDraw[0] == false)
+			redrawAll();
 
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
@@ -358,9 +387,12 @@ app.main = (function () {
 		{
 			pause.src = "media/fighters/" + enemy + "Dmgd.png";
 			let beamCap = new Image();
-			beamCap.src = "media/" + beamColors[fighter][3] + "BeamCap.png";
+			beamCap.src = "media/other/" + beamColors[fighter][3] + "BeamCap.png";
 			ctx.drawImage(beamCap, 600, beamPos[fighter][1] - 13);
 		}
+		
+		if (shenDraw[1] == true)
+			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 	}
 	
 	// helper function to update ballLoc array based on ballRadius
@@ -391,8 +423,11 @@ app.main = (function () {
 		ctx.drawImage(bg, (CANVAS_WIDTH - bg.width) / 2, CANVAS_HEIGHT - bg.height);
 		
 		// redraw buttons
-		ctx.drawImage(canvPlayButton, buttonLoc["play"][0], buttonLoc["play"][1]);
-		ctx.drawImage(canvPauseButton, buttonLoc["pause"][0], buttonLoc["pause"][1]);
+		ctx.font = '64px "Font Awesome 5 Free"';
+		ctx.fillStyle = "black";
+		
+		ctx.fillText("\uf144", buttonLoc["play"][0], buttonLoc["play"][1]);
+		ctx.fillText("\uf28b", buttonLoc["pause"][0], buttonLoc["pause"][1]);
 	}
 	
 	// helper function to draw fighters

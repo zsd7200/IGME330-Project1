@@ -1,3 +1,8 @@
+/* Allowing font awesome to be used in ctx.fillText */
+/* https://stackoverflow.com/questions/49728830/how-to-draw-fontawesomeversion-5-0-in-canvas */
+@import url('https://use.fontawesome.com/releases/v5.7.2/css/all.css');
+canvas { font-family: "Font Awesome 5 Free"; }
+
 /* Add background gradient */
 body { background: linear-gradient(rgb(255, 180, 43), rgb(188, 122, 0)); font-family: 'Abel', sans-serif; }
 
@@ -29,6 +34,10 @@ canvas { box-shadow: 0px 0px 10px grey; }
 	padding: 10px;
 	max-width: 24%;
 	margin-left: 10px;
+}
+
+#shenBut {
+	align-self: center;
 }
 
 /* Fixed footer */
