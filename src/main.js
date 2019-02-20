@@ -7,9 +7,9 @@ app.main = (function () {
 		play, pause, 
 		audio, state, 
 		fighter, enemy, shen,
-		bg, bgName, bgColors, 
-		beamPos, 
+		bg, bgName, bgColors,
 		isFullscreen,
+		beamPos, beamCap, 
 		ballRadius, stars, 
 		analyserNode, gainNode, audioCtx;
 		
@@ -87,6 +87,7 @@ app.main = (function () {
 		bgColors = app.utilities.setBgColors(ctx);
 		shen = new Image();
 		shen.src = "media/other/shenron.png";
+		beamCap = new Image();
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
@@ -443,7 +444,12 @@ app.main = (function () {
 			ctx.fillStyle = BEAM_MIDDLE_COLOR;
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);	
 			
+			beamCap.src = "media/other/" + beamColors[fighter][3] + "BeamCap.png";
+			ctx.drawImage(beamCap, (beamPos[fighter][0] - 13) + (525 * percent), beamPos[fighter][1] - 13);
 			
+			// draw shenron if he has been summoned
+			if (shenDraw[1] == true)
+				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
 			for (let i = 0; i < 64; i++)
 			{
@@ -498,16 +504,14 @@ app.main = (function () {
 			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 		
 		// necessary so fighters are always above beam
-		drawFighters();
+		// this call will _only_ draw fighter when song is over
+		// this means that enemy will be drawn in redrawAll(), and will be behind
+		// both the beam and the beam cap
+		drawFighters(audio.duration / audio.currentTime);
 		
-		// if song is over, change enemy state to "dmgd" and add beamcap
-		if(audio.duration == audio.currentTime)
-		{
+		// if song is over, change enemy state to "dmgd"
+		if(audio.duration / audio.currentTime == 1)
 			pause.src = "media/fighters/" + enemy + "Dmgd.png";
-			let beamCap = new Image();
-			beamCap.src = "media/other/" + beamColors[fighter][3] + "BeamCap.png";
-			ctx.drawImage(beamCap, 600, beamPos[fighter][1] - 13);
-		}
 	}
 	
 	// helper function to update ballLoc array based on ballRadius
@@ -546,16 +550,21 @@ app.main = (function () {
 	}
 	
 	// helper function to draw fighters
-	function drawFighters()
+	function drawFighters(perc = 0)
 	{
 		// draw fighter
 		ctx.drawImage(play, 17, CANVAS_HEIGHT - 120);
 		
-		// flip and draw enemy
-		ctx.save();
-		ctx.scale(-1, 1);
-		ctx.drawImage(pause, -662, CANVAS_HEIGHT - 120);
-		ctx.restore();
+		// if perc (audio.duration/audio.time) = 1 (which means the song is over), do not draw enemy over beam
+		if (perc != 1)
+		{
+			// flip and draw enemy
+			ctx.save();
+			ctx.scale(-1, 1);
+			ctx.drawImage(pause, -662, CANVAS_HEIGHT - 120);
+			ctx.restore();
+		}
+
 	}
 	
 	// helper function to redraw balls
@@ -564,7 +573,8 @@ app.main = (function () {
 		// redraw background
 		drawBg();
 		
-		// fighters are redrawn separately so they can be on top of beam at all times
+		// fighters are drawn here so the enemy can be behind beam at song end
+		drawFighters();
 		
 		// redraw dragon balls
 		for (let i = 0; i < balls.length; i++)
