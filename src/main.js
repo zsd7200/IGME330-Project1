@@ -261,14 +261,6 @@ app.main = (function () {
 		// this needs to be reset in case the user restarts the same song
 		pause.src = "media/fighters/" + enemy + "Idle.png";
 	}
-	
-	// Pausing the music when the pause button is pressed
-	// State is not set to "idle" because this would look jarring, as the beam stays out
-	function pauseMusic()
-	{
-		audio.pause(); 
-		audioCtx.suspend();
-	}
 
 	// poc play/pause button on canvas functionality
 	// does NOT work in fullscreen
@@ -284,7 +276,7 @@ app.main = (function () {
 		
 		if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + 64 && mouse.y > buttonLoc["pause"][1] - 64 && mouse.y < buttonLoc["pause"][1])
 		{
-			pauseMusic();
+			audio.pause();
 		}
 
 
