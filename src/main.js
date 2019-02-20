@@ -9,6 +9,7 @@ app.main = (function () {
 		fighter, enemy, shen,
 		bg, bgName, bgColors, 
 		beamPos, 
+		isFullscreen,
 		ballRadius, stars, 
 		analyserNode, gainNode, audioCtx;
 		
@@ -16,8 +17,8 @@ app.main = (function () {
 	let ballLoc = [];
 	let balls = [];
 	const buttonLoc = {
-		"play" : [100, 176],
-		"pause" : [525, 176]
+		"play" : [100, 176, 410, 176],
+		"pause" : [525, 176, 1020, 176]
 	};
 	let shenDraw = [false, false]; // shenDraw[0] is whether or not it is currently drawing, shenDraw[1] is whether or not to always draw it
 	
@@ -128,6 +129,8 @@ app.main = (function () {
 		analyserNode.connect(audioCtx.destination);
 
 		canvas.onmousedown = doMousedown;
+
+		isFullscreen = false;
 		document.querySelector("#volumeLabel").innerHTML = 50;
 
 		// attach musicChange script
@@ -187,8 +190,20 @@ app.main = (function () {
 		//Setting up full screen 
 		document.querySelector("#fullscreenBut").onclick = _ =>{
 				requestFullscreen(canvas);
+				isFullscreen = true;
 			};
-	
+		
+		document.addEventListener("keydown", function(event){
+			if(isFullscreen)
+				if(event.keyCode == 27)
+					isFullscreen = false;
+			if(event.keyCode == 32)
+				if(state == "Idle")
+					playMusic();
+				else if(state == "Play")
+					pauseMusic();
+				
+		});
 		// update for beam creation and animation
 		update();
 	}
@@ -267,7 +282,7 @@ app.main = (function () {
 	function pauseMusic()
 	{
 		audio.pause(); 
-		audioCtx.suspend();
+		//audioCtx.suspend();
 	}
 
 	// poc play/pause button on canvas functionality
@@ -276,17 +291,30 @@ app.main = (function () {
 	function doMousedown(e)
 	{
 		let mouse = app.utilities.getMouse(e);
-		
-		if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + 64 && mouse.y > buttonLoc["play"][1] - 64 && mouse.y < buttonLoc["play"][1])
+		if(isFullscreen == false)
 		{
-			playMusic();
+			if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + 64 && mouse.y > buttonLoc["play"][1] - 64 && mouse.y < buttonLoc["play"][1])
+			{
+				playMusic();
+			}
+			
+			if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + 64 && mouse.y > buttonLoc["pause"][1] - 64 && mouse.y < buttonLoc["pause"][1])
+			{
+				pauseMusic();
+			}
 		}
-		
-		if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + 64 && mouse.y > buttonLoc["pause"][1] - 64 && mouse.y < buttonLoc["pause"][1])
+		else
 		{
-			pauseMusic();
+			if(mouse.x > buttonLoc["play"][2] && mouse.x < buttonLoc["play"][2] + 64 && mouse.y > buttonLoc["play"][3] - 64 && mouse.y < buttonLoc["play"][3])
+			{
+				playMusic();
+			}
+			
+			if(mouse.x > buttonLoc["pause"][2] && mouse.x < buttonLoc["pause"][2] + 64 && mouse.y > buttonLoc["pause"][3] - 64 && mouse.y < buttonLoc["pause"][3])
+			{
+				pauseMusic();
+			}
 		}
-
 
 	}
 	
@@ -415,9 +443,7 @@ app.main = (function () {
 			ctx.fillStyle = BEAM_MIDDLE_COLOR;
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);	
 			
-			// draw shenron if he has been summoned
-			if (shenDraw[1] == true)
-				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+			
 			
 			for (let i = 0; i < 64; i++)
 			{
@@ -446,7 +472,7 @@ app.main = (function () {
 			balls[0].redraw();
 
 			//Switching to waveform data
-			analyserNode.getByteTimeDomainData(data);
+			//analyserNode.getByteTimeDomainData(data);
 			//Displaying the waveform as an innercircle to the ball, scalable to multiple balls
 			//TODO: Figure out how to only display parts of the waveform, if we want multiple balls
 			for(let i = 0; i < data.length; i++){
@@ -466,6 +492,10 @@ app.main = (function () {
 		}
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";
+		
+			// draw shenron if he has been summoned
+		if (shenDraw[1] == true)
+			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 		
 		// necessary so fighters are always above beam
 		drawFighters();

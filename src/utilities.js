@@ -28,7 +28,7 @@ app.utilities = (function () {
 		let mouse = {}
 		mouse.x = e.pageX - e.target.offsetLeft;
 		mouse.y = e.pageY - e.target.offsetTop;
-		//console.log(mouse.x + " " + mouse.y);
+		console.log(mouse.x + " " + mouse.y);
 		return mouse;
     }
 	
