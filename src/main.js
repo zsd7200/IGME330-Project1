@@ -10,15 +10,18 @@ app.main = (function () {
 		bg, bgName, bgColors,
 		isFullscreen,
 		beamPos, beamCap, 
+		isPaused,
 		ballRadius, stars, 
+		isInvert, isTint, isNoise,
+		testSpin,
 		analyserNode, gainNode, audioCtx;
 		
 	let ballsToDraw = [];
 	let ballLoc = [];
 	let balls = [];
 	const buttonLoc = {
-		"play" : [100, 176, 410, 176],
-		"pause" : [525, 176, 1020, 176]
+		"play" : [100, 176, 410, 260],
+		"pause" : [525, 176, 1020, 260]
 	};
 	let shenDraw = [false, false]; // shenDraw[0] is whether or not it is currently drawing, shenDraw[1] is whether or not to always draw it
 	
@@ -131,7 +134,9 @@ app.main = (function () {
 
 		canvas.onmousedown = doMousedown;
 
-		isFullscreen = false;
+		isFullscreen = isPaused = isInvert = isTint = isNoise = false;
+
+		testSpin = 0;
 		document.querySelector("#volumeLabel").innerHTML = 50;
 
 		// attach musicChange script
@@ -191,20 +196,32 @@ app.main = (function () {
 		//Setting up full screen 
 		document.querySelector("#fullscreenBut").onclick = _ =>{
 				requestFullscreen(canvas);
-				isFullscreen = true;
+
 			};
 		
+		//Allowing for keyboard control 
 		document.addEventListener("keydown", function(event){
-			if(isFullscreen)
-				if(event.keyCode == 27)
-					isFullscreen = false;
+			//Using the spacebar to toggle play pause 
 			if(event.keyCode == 32)
-				if(state == "Idle")
+				if(isPaused)
 					playMusic();
-				else if(state == "Play")
+				else
 					pauseMusic();
-				
+			
+			if(event.keyCode == 70)
+				if(isFullscreen == false)
+					requestFullscreen(canvas);
+
+			
 		});
+
+		document.querySelector('#tintCB').checked = isTint;
+		document.querySelector('#invertCB').checked = isInvert;
+		document.querySelector('#noiseCB').checked = isNoise;
+		document.querySelector('#tintCB').onchange = e => isTint = e.target.checked;
+		document.querySelector('#invertCB').onchange = e => isInvert = e.target.checked;
+		document.querySelector('#noiseCB').onchange = e => isNoise = e.target.checked;
+
 		// update for beam creation and animation
 		update();
 	}
@@ -273,6 +290,7 @@ app.main = (function () {
 		audioCtx.resume(); // needed for chrome to play music
 		audio.play();
 		state = "Play";
+		isPaused = false;
 		
 		// this needs to be reset in case the user restarts the same song
 		pause.src = "media/fighters/" + enemy + "Idle.png";
@@ -283,6 +301,7 @@ app.main = (function () {
 	function pauseMusic()
 	{
 		audio.pause(); 
+		isPaused = true;
 		//audioCtx.suspend();
 	}
 
@@ -292,6 +311,8 @@ app.main = (function () {
 	function doMousedown(e)
 	{
 		let mouse = app.utilities.getMouse(e);
+
+		//Setting different positions for play/pause button interaction based on whether the canvas is full screen or not
 		if(isFullscreen == false)
 		{
 			if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + 64 && mouse.y > buttonLoc["play"][1] - 64 && mouse.y < buttonLoc["play"][1])
@@ -417,7 +438,14 @@ app.main = (function () {
 		//Showing frequency 
 		analyserNode.getByteFrequencyData(data);
 		//analyserNode.getByteTimeDomainData(data);
-
+		if(document.fullscreen == false)
+		{
+			isFullscreen = false;
+		}
+		else
+		{
+			isFullscreen = true;
+		}
 		// clear everything and redraw all dragon balls
 		if (shenDraw[0] == false)
 			redrawAll();
@@ -462,7 +490,7 @@ app.main = (function () {
 				ctx.scale(1, -1);
 				
 				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
-				ctx.rotate(rotationAmount);
+				ctx.rotate(rotationAmount + testSpin);
 				ctx.translate(0, balls[0].maxBar / 1.1);
 				ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
 				
@@ -512,6 +540,51 @@ app.main = (function () {
 		// if song is over, change enemy state to "dmgd"
 		if(audio.duration / audio.currentTime == 1)
 			pause.src = "media/fighters/" + enemy + "Dmgd.png";
+		
+		testSpin += .01;
+		addEffects();
+	}
+
+
+	function addEffects()
+	{
+		//Grab image data
+		let imageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height);
+
+		//Getting info about the array
+		let data = imageData.data;
+		let length = data.length;
+		let width = imageData.width;
+
+		//Looping through the pixels
+
+		let i;
+		for(i = 0; i < length; i +=4)
+		{
+			if(isTint)
+			{
+				data[i+2] = data[i+2] + 100;
+			}
+
+			if(isInvert)
+			{
+				let red = data[i], green = data[i+1], blue = data[i+2];
+				data[i] = 255 - red;
+				data [i+1] = 255 - green;
+				data [i+2] = 255 - blue;
+
+			}
+
+			if(isNoise && Math.random() < .1)
+			{
+				data[i] = data[i+1] = data[i+2] = 128
+
+				data[i+3] = 255;
+			}
+		}
+
+		//Applying the image to the canvas
+		ctx.putImageData(imageData, 0,0);
 	}
 	
 	// helper function to update ballLoc array based on ballRadius
