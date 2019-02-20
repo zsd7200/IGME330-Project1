@@ -12,6 +12,17 @@ canvas { box-shadow: 0px 0px 10px grey; }
 /* Left and right padding for flexbox container */
 .pad { width: 10%; }
 
+#drag {
+	color: white;
+	background-color: rgba(0,0,0, 0.5);
+	transition: .5s;
+	border-radius: 10px;
+	padding: 10px;
+	border: 3px dashed rgba(0,0,0, 0.9);
+	text-align:center;
+	transition: .5s;
+}
+
 /* Main flex container properties */
 /* Flexbox resource: https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */
 #flex-container {

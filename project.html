@@ -33,8 +33,9 @@
 					</li>
 				  </ul>
 				  <div class="tab-content" id="myTabContent">
-					<div class="tab-pane fade show active" id="controls" role="tabpanel" aria-labelledby="controls-tab"><audio src="media/music/chala.mp3" id="audio"></audio>
-						<label>Song:
+					<div class="tab-pane fade show active" id="controls" role="tabpanel" aria-labelledby="controls-tab">
+					<audio src="media/music/chala.mp3" id="audio"></audio>
+						<label>Select a Song:
 								<select class="form-control" id="songSelector">
 									<option value="chala" selected>Head Cha La</option>
 									<option value="tank">Tank!</option>
@@ -44,9 +45,14 @@
 								</select>
 						</label>
 						
-						<br>
+						<p>or...</p>
+						
+						<div id="dragBox">
+							<p id="drag">Click here to upload music or drag music file here</p>
+							<input type="file" id="clickUpload" hidden></input>
+						</div>
 							
-						<label>Fighter:
+						<label>Choose a Fighter:
 								<select class="form-control" id="playSelector">
 									<option value="goku" selected>Goku</option>
 									<option value="vegeta">Vegeta</option>
@@ -61,7 +67,7 @@
 								</select>
 						</label>
 					
-						<label>Enemy:
+						<label>Choose an Enemy:
 								<select class="form-control" id="pauseSelector">
 									<option value="goku">Goku</option>
 									<option value="vegeta">Vegeta</option>
@@ -112,10 +118,13 @@
 	<br><br>
 	
 	<button id="shenBut" class="btn btn-dark" title="Summon the almighty dragon, Shenron! Requires all 7 Dragon Balls!" disabled>Summon Shenron!</button>
+	<button id="unshenBut" class="btn btn-dark" title="Tell that pesky dragon to beat it, bozo!" disabled>Unsummon Shenron!</button>
 	</div>
 	
 
 	<div class="pad"></div>
+	
+
 	
 	<div id="footer">
 		<p>created by Zack Dunham and Tristan Marshall<p>

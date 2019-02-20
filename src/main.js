@@ -5,7 +5,6 @@ app.main = (function () {
 	window.onload = init;
 	let canvas, ctx, 
 		play, pause, 
-		canvPlayButton, canvPauseButton, 
 		audio, state, 
 		fighter, enemy, shen,
 		bg, bgName, bgColors, 
@@ -56,6 +55,24 @@ app.main = (function () {
 	{
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
+		let dragBox = document.querySelector("#dragBox");
+		let drag = document.querySelector("#drag");
+
+		dragBox.ondragover = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.8)"; };
+		dragBox.ondragleave = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; };
+		dragBox.onmouseover = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.8)"; };
+		dragBox.onmouseleave = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; };
+		
+		// play dropped in file
+		dragBox.ondrop = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; if(e.dataTransfer.files.length > 1) drag.innerHTML = "Please only drag in one file!"; else customMusicHandler(e.dataTransfer.files[0]); };
+		
+		// force a hidden input for file upload dialog
+		// https://www.aspsnippets.com/Articles/Open-Fileupload-Upload-File-on-Button-Click-using-JavaScript-and-jQuery.aspx
+		dragBox.onclick = function(e) { document.querySelector("#clickUpload").click(); };
+		
+		// play file from input
+		document.querySelector("#clickUpload").oninput = function (e) { customMusicHandler(document.querySelector("#clickUpload").files[0]); };
+
 
 		const NUM_SAMPLES = 128;
 		
@@ -69,8 +86,6 @@ app.main = (function () {
 		bgColors = app.utilities.setBgColors(ctx);
 		shen = new Image();
 		shen.src = "media/other/shenron.png";
-		canvPauseButton = new Image();
-		canvPauseButton.src = "media/other/pause_small.png";
 		audio = document.querySelector("#audio");
 		state = play.src.substr(-8).substr(0, 4); // result will be either Idle or Play
 		
@@ -142,26 +157,31 @@ app.main = (function () {
 		}
 		document.querySelector("#addBall").onclick = addBall;
 		document.querySelector("#remBall").onclick = remBall;
+		document.querySelector("#remBall").disabled = true;
+		
 		document.querySelector("#shenBut").onclick = function(e) {
-			let timer = 0;
 			shenDraw[0] = true;
-			document.querySelector("#remBall").disabled = true;
+			document.querySelector("#shenBut").disabled = true;
+			document.querySelector("#remBall").disabled = true;			
+			shenronFade("in");
 			
-			let fade = setInterval(function() {
-				ctx.clearRect(CANVAS_WIDTH/2 - 200, 0, shen.width, shen.height);
-				redrawAll();
-				timer += 0.01;
-				ctx.globalAlpha = timer;
-				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
-				ctx.globalAlpha = 1;
-				
-				if (timer >= 1)
-				{
-					clearInterval(fade);
-					shenDraw[0] = false;
-					shenDraw[1] = true;
-				}
-			}, 25);
+			// wait until shenron is fully faded in to change buttons around
+			setTimeout(function(e) { 
+				document.querySelector("#unshenBut").disabled = false;
+			}, 3000); 
+		};
+		
+		document.querySelector("#unshenBut").onclick = function(e) {
+			shenDraw[0] = true;
+			shenDraw[1] = false; // this is necessary here because of shenron being drawn in update
+			document.querySelector("#unshenBut").disabled = true;
+			shenronFade("out");
+			
+			// wait until shenron is fully faded out to change buttons around
+			setTimeout(function(e) { 
+				document.querySelector("#shenBut").disabled = false;
+				document.querySelector("#remBall").disabled = false;	
+			}, 3000); 
 		};
 
 		//Setting up full screen 
@@ -171,6 +191,64 @@ app.main = (function () {
 	
 		// update for beam creation and animation
 		update();
+	}
+
+	// handle animation of shenron fading in/out
+	function shenronFade(inout)
+	{
+		// set a timer equal to 0 or 1 based on fading in or out respectively
+		let timer;
+		
+		if(inout == "in") { timer = 0; }
+		else { timer = 1 }
+		
+		// setInterval function goes off every 25 miliseconds
+		// declaring it as a variable allows me to stop it whenever
+		let fade = setInterval(function() {
+			
+			// clear where shenron was and redraw everything else
+			ctx.clearRect(CANVAS_WIDTH/2 - 200, 0, shen.width, shen.height);
+			redrawAll();
+			
+			// increment or decrement timer based on in/out
+			if (inout == "in") { timer += 0.01; }
+			else { timer -= 0.01; }
+			
+			// set global alpha equal to timer and draw shenron, then reset global alpha to 1
+			ctx.globalAlpha = timer;
+			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+			ctx.globalAlpha = 1;
+			
+			// if shenron has faded in, stop this loop
+			if (timer >= 1)
+			{
+				clearInterval(fade);
+				shenDraw[0] = false;
+				shenDraw[1] = true;
+			}
+			// if shenron has faded out, do the same
+			else if (timer <= 0)
+			{
+				clearInterval(fade);
+				shenDraw[0] = false;
+			}
+		}, 25);
+	}
+
+	function customMusicHandler(file)
+	{
+		// make sure it's a useable type of audio, it doesn't like wma for some reason
+		if(file.type.substr(0, 5) == "audio" && file.type != "audio/x-ms-wma")
+		{
+			// change innerHTML to say what it's playing
+			drag.innerHTML = "Now playing... " + file.name;
+			audio.src = window.URL.createObjectURL(file);			// https://stackoverflow.com/questions/28619550/javascript-play-uploaded-audio
+			playMusic();
+		}
+		
+		// otherwise say it's not supported
+		else
+			drag.innerHTML = "Not an accepted audio file!";
 	}
 
 	// play music and change state to play
@@ -226,7 +304,13 @@ app.main = (function () {
 		}
 		
 		if (ballsToDraw.length == 0)
+		{
 			document.querySelector("#shenBut").disabled = false;
+			document.querySelector("#addBall").disabled = true;
+		}
+		
+		document.querySelector("#remBall").disabled = false;
+			
 	}
 	
 	// remove ball method
@@ -252,8 +336,8 @@ app.main = (function () {
 			redrawAll();
 		}
 		
-		if (document.querySelector("#shenBut").disabled == false)
-			document.querySelector("#shenBut").disabled = true;
+		document.querySelector("#shenBut").disabled = true;
+		document.querySelector("#addBall").disabled = false;
 	}
 
 	function requestFullscreen(element)
@@ -331,6 +415,10 @@ app.main = (function () {
 			ctx.fillStyle = BEAM_MIDDLE_COLOR;
 			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);	
 			
+			// draw shenron if he has been summoned
+			if (shenDraw[1] == true)
+				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+			
 			for (let i = 0; i < 64; i++)
 			{
 				let percent = data[i] / 255;
@@ -390,9 +478,6 @@ app.main = (function () {
 			beamCap.src = "media/other/" + beamColors[fighter][3] + "BeamCap.png";
 			ctx.drawImage(beamCap, 600, beamPos[fighter][1] - 13);
 		}
-		
-		if (shenDraw[1] == true)
-			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 	}
 	
 	// helper function to update ballLoc array based on ballRadius
