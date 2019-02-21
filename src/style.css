@@ -89,6 +89,12 @@ label{
 	padding-right: 5px;
 	padding-left: 5px;
 }
+
+/*Cursor was not correct when hovering these items*/
+.dropdown-item
+{
+	cursor: pointer;
+}
 /* Change control button style */
 .controls {
 	border: none;

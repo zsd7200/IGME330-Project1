@@ -13,8 +13,8 @@ app.main = (function () {
 		isPaused,
 		ballRadius, stars, 
 		isInvert, isTint, isNoise,
-		testSpin,
-		analyserNode, gainNode, audioCtx;
+		testSpin,filterType, dropdownText,
+		analyserNode, gainNode, biquadFilter, audioCtx;
 		
 	let ballsToDraw = [];
 	let ballLoc = [];
@@ -128,10 +128,15 @@ app.main = (function () {
 		analyserNode.fftSize = NUM_SAMPLES;
 		gainNode = audioCtx.createGain();
 		gainNode.gain.value = 1;
+		biquadFilter = audioCtx.createBiquadFilter();
 		sourceNode.connect(gainNode);
-		gainNode.connect(analyserNode);
+		gainNode.connect(biquadFilter);
+		biquadFilter.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);
 
+		biquadFilter.type = "highshelf";
+		filterType = "None";
+		dropdownText = document.querySelector("#dropdownMenuButton");
 		canvas.onmousedown = doMousedown;
 
 		isFullscreen = isPaused = isInvert = isTint = isNoise = false;
@@ -208,12 +213,22 @@ app.main = (function () {
 				else
 					pauseMusic();
 			
+			//Adding fullscreen mode with F
 			if(event.keyCode == 70)
 				if(isFullscreen == false)
 					requestFullscreen(canvas);
 
 			
 		});
+
+		document.querySelector("#noneFilter").onclick = function(e){ filterType = "None"; dropdownText.innerHTML = "None"};
+		document.querySelector("#lowPFilter").onclick = function(e){ filterType = "lowpass"; dropdownText.innerHTML = "Lowpass"};
+		document.querySelector("#highPFilter").onclick = function(e){ filterType = "highpass"; dropdownText.innerHTML = "Highpass"};
+		document.querySelector("#bandPFilter").onclick = function(e){ filterType = "bandpass"; dropdownText.innerHTML = "Bandpass"};
+		document.querySelector("#lowSFilter").onclick = function(e){ filterType = "lowshelf"; dropdownText.innerHTML = "Lowshelf"};
+		document.querySelector("#highSFilter").onclick = function(e){ filterType = "highshelf"; dropdownText.innerHTML = "Highshelf"};
+
+
 
 		document.querySelector('#tintCB').checked = isTint;
 		document.querySelector('#invertCB').checked = isInvert;
@@ -434,6 +449,7 @@ app.main = (function () {
 	function update()
 	{	
 		requestAnimationFrame(update);
+		modifyAudio();
 		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
 		//Showing frequency 
 		analyserNode.getByteFrequencyData(data);
@@ -545,6 +561,21 @@ app.main = (function () {
 		addEffects();
 	}
 
+
+	function modifyAudio()
+	{
+		if(filterType == "None")
+		{
+            biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
+
+		}
+		else 
+		{
+			biquadFilter.type = filterType;
+			biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
+		}
+	}
 
 	function addEffects()
 	{
