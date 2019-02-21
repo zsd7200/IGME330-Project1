@@ -38,10 +38,72 @@ app.drawing = (function () {
 			ctx.restore();
 		}
 
+    }
+    
+    function addEffects(ctx, isTint, isInvert, isNoise)
+	{
+		//Grab image data
+		let imageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height);
+
+		//Getting info about the array
+		let data = imageData.data;
+		let length = data.length;
+		let width = imageData.width;
+
+		//Looping through the pixels
+
+		let i;
+		for(i = 0; i < length; i +=4)
+		{
+			if(isTint)
+			{
+				data[i+2] = data[i+2] + 100;
+			}
+
+			if(isInvert)
+			{
+				let red = data[i], green = data[i+1], blue = data[i+2];
+				data[i] = 255 - red;
+				data [i+1] = 255 - green;
+				data [i+2] = 255 - blue;
+
+			}
+
+			if(isNoise && Math.random() < .1)
+			{
+				data[i] = data[i+1] = data[i+2] = 128
+
+				data[i+3] = 255;
+			}
+		}
+
+		//Applying the image to the canvas
+		ctx.putImageData(imageData, 0,0);
+	}
+
+
+    function redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc)
+	{
+		// redraw background
+		drawBg(ctx, bg, bgName, bgColors, buttonLoc, CANVAS_HEIGHT, CANVAS_WIDTH);
+		
+		// fighters are drawn here so the enemy can be behind beam at song end
+		drawFighters(ctx, play, CANVAS_HEIGHT, pause);
+		
+		// redraw dragon balls
+		for (let i = 0; i < balls.length; i++)
+		{
+			if (i == 0)
+				balls[i].redraw(ballRadius);
+			else
+				balls[i].redraw(ballRadius/2, ballLoc[i][0], ballLoc[i][1]);
+		}
 	}
 
     return{
         drawBg,
-        drawFighters
+        drawFighters,
+        addEffects,
+        redrawAll
     }
 })();

@@ -153,7 +153,7 @@ app.main = (function () {
 
 		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/fighters/" + enemy + "Idle.png"; };
 		
-		document.querySelector("#bgSelector").onchange = function (e) { bgName = e.target.value; redrawAll(); };
+		document.querySelector("#bgSelector").onchange = function (e) { bgName = e.target.value; app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc); };
 		
 		// handle changing stars and radius based on sliders
 		document.querySelector("#ballRad").oninput = function(e) { 
@@ -163,7 +163,7 @@ app.main = (function () {
 			
 			// updateBallLoc updates ballLoc array based on new ballRadius
 			updateBallLoc();
-			redrawAll();
+			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 		};
 
 
@@ -208,7 +208,7 @@ app.main = (function () {
 
 		//Setting up full screen 
 		document.querySelector("#fullscreenBut").onclick = _ =>{
-				requestFullscreen(canvas);
+				app.utilities.requestFullscreen(canvas);
 
 			};
 		
@@ -224,7 +224,7 @@ app.main = (function () {
 			//Adding fullscreen mode with F
 			if(event.keyCode == 70)
 				if(isFullscreen == false)
-					requestFullscreen(canvas);
+					app.utilities.requestFullscreen(canvas);
 
 			
 		});
@@ -233,7 +233,7 @@ app.main = (function () {
 		canvas.onmousedown = doMousedown;
 
 		//Adding listeners for the dropdown menu for audio effects
-		document.querySelector("#noneFilter").onclick = function(e){ filterType = "None"; dropdownText.innerHTML = "None"};
+		document.querySelector("#noneFilter").onclick = function(e){ filterType = "None"; dropdownText.innerHTML = "Select Filter Type"};
 		document.querySelector("#lowPFilter").onclick = function(e){ filterType = "lowpass"; dropdownText.innerHTML = "Lowpass"};
 		document.querySelector("#highPFilter").onclick = function(e){ filterType = "highpass"; dropdownText.innerHTML = "Highpass"};
 		document.querySelector("#bandPFilter").onclick = function(e){ filterType = "bandpass"; dropdownText.innerHTML = "Bandpass"};
@@ -257,36 +257,6 @@ app.main = (function () {
 	// handle animation of shenron fading in/out
 	function shenronFade(inout)
 	{
-		/* using setTimeout recursively instead of using setInterval
-		if(timer > 0 && timer < 1)
-		{
-			ctx.globalAlpha = timer;
-			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
-			ctx.globalAlpha = 1;
-			
-			// if shenron has faded in, stop this loop
-			if (timer >= 1)
-			{
-				clearInterval(fade);
-				shenDraw[0] = false;
-				shenDraw[1] = true;
-			}
-			// if shenron has faded out, do the same
-			else if (timer <= 0)
-			{
-				clearInterval(fade);
-				shenDraw[0] = false;
-			}
-			
-			if(inout == "in") { setTimeout(function(e) { shenronFade(inout, timer + .01); }, 100); }
-			else { setTimeout(function(e) { shenronFade(inout, timer - .01); }, 100); }
-
-		}
-		*/
-		
-		
-		
-		
 		// set a timer equal to 0 or 1 based on fading in or out respectively
 		let timer;
 		
@@ -299,7 +269,7 @@ app.main = (function () {
 			
 			// clear where shenron was and redraw everything else
 			ctx.clearRect(CANVAS_WIDTH/2 - 200, 0, shen.width, shen.height);
-			redrawAll();
+			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 			
 			// increment or decrement timer based on in/out
 			if (inout == "in") { timer += 0.01; }
@@ -309,7 +279,7 @@ app.main = (function () {
 			ctx.globalAlpha = timer;
 			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			ctx.globalAlpha = 1;
-			addEffects();
+			app.drawing.addEffects(ctx, isTint, isInvert, isNoise);
 			
 			// if shenron has faded in, stop this loop
 			if (timer >= 1)
@@ -439,27 +409,13 @@ app.main = (function () {
 			balls.pop();
 			
 			// wipe everything and redraw
-			redrawAll();
+			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 		}
 		
 		document.querySelector("#shenBut").disabled = true;
 		document.querySelector("#addBall").disabled = false;
 	}
 
-	//Making the canvas go full screen
-	function requestFullscreen(element)
-	{
-		if (element.requestFullscreen) {
-			  element.requestFullscreen();
-			} else if (element.mozRequestFullscreen) {
-			  element.mozRequestFullscreen();
-			} else if (element.mozRequestFullScreen) { // camel-cased 'S' was changed to 's' in spec
-			  element.mozRequestFullScreen();
-			} else if (element.webkitRequestFullscreen) {
-			  element.webkitRequestFullscreen();
-			}
-	}
-	
 	// handles if music is changed from dropdown
 	function musicChange(e)
 	{
@@ -484,7 +440,7 @@ app.main = (function () {
 			audio.src = "media/music/door.wav";
 		
 		// wipe everything and redraw balls
-		redrawAll();
+		app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 	}
 
 	// used for creation of beam
@@ -511,7 +467,7 @@ app.main = (function () {
 
 		// clear everything and redraw all dragon balls
 		if (shenDraw[0] == false)
-			redrawAll();
+			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
@@ -601,7 +557,7 @@ app.main = (function () {
 		// this means that enemy will be drawn in redrawAll(), and will be behind
 		// both the beam and the beam cap
 		if (shenDraw[0] == false)
-			drawFighters(audio.duration / audio.currentTime);
+			app.drawing.drawFighters(ctx, play, CANVAS_HEIGHT, pause, audio.duration / audio.currentTime);
 		
 		// if song is over, change enemy state to "dmgd"
 		if(audio.duration / audio.currentTime == 1)
@@ -610,7 +566,7 @@ app.main = (function () {
 		testSpin += .01;
 		
 		if(shenDraw[0] == false)
-			addEffects();
+			app.drawing.addEffects(ctx, isTint, isInvert, isNoise);
 	}
 
 	//Change the audio effect of the song based on the selection from the dropdown
@@ -630,48 +586,7 @@ app.main = (function () {
 		}
 	}
 
-	function addEffects()
-	{
-		//console.log("effectCall");
-		
-		//Grab image data
-		let imageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height);
-
-		//Getting info about the array
-		let data = imageData.data;
-		let length = data.length;
-		let width = imageData.width;
-
-		//Looping through the pixels
-
-		let i;
-		for(i = 0; i < length; i +=4)
-		{
-			if(isTint)
-			{
-				data[i+2] = data[i+2] + 100;
-			}
-
-			if(isInvert)
-			{
-				let red = data[i], green = data[i+1], blue = data[i+2];
-				data[i] = 255 - red;
-				data [i+1] = 255 - green;
-				data [i+2] = 255 - blue;
-
-			}
-
-			if(isNoise && Math.random() < .1)
-			{
-				data[i] = data[i+1] = data[i+2] = 128
-
-				data[i+3] = 255;
-			}
-		}
-
-		//Applying the image to the canvas
-		ctx.putImageData(imageData, 0,0);
-	}
+	
 	
 	// helper function to update ballLoc array based on ballRadius
 	function updateBallLoc()
@@ -690,63 +605,6 @@ app.main = (function () {
 		];
 	}
 	
-	// helper function to draw background
-	function drawBg()
-	{
-		//console.log("call");
-		
-		if (bg.src != "media/bg/" + bgName + ".png")
-			bg.src = "media/bg/" + bgName + ".png";
-		
-		ctx.fillStyle = bgColors[bgName];
-		ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-		ctx.drawImage(bg, (CANVAS_WIDTH - bg.width) / 2, CANVAS_HEIGHT - bg.height);
-		
-		// redraw buttons
-		ctx.font = '64px "Font Awesome 5 Free"';
-		ctx.fillStyle = "black";
-		
-		ctx.fillText("\uf144", buttonLoc["play"][0], buttonLoc["play"][1]);
-		ctx.fillText("\uf28b", buttonLoc["pause"][0], buttonLoc["pause"][1]);
-	}
-	
-	// helper function to draw fighters
-	function drawFighters(perc = 0)
-	{
-		// draw fighter
-		ctx.drawImage(play, 17, CANVAS_HEIGHT - 120);
-		
-		// if perc (audio.duration/audio.time) = 1 (which means the song is over), do not draw enemy over beam
-		if (perc != 1)
-		{
-			// flip and draw enemy
-			ctx.save();
-			ctx.scale(-1, 1);
-			ctx.drawImage(pause, -662, CANVAS_HEIGHT - 120);
-			ctx.restore();
-		}
-
-	}
-	
-	// helper function to redraw balls
-	function redrawAll()
-	{
-		// redraw background
-		drawBg();
-		
-		// fighters are drawn here so the enemy can be behind beam at song end
-		drawFighters();
-		
-		// redraw dragon balls
-		for (let i = 0; i < balls.length; i++)
-		{
-			if (i == 0)
-				balls[i].redraw(ballRadius);
-			else
-				balls[i].redraw(ballRadius/2, ballLoc[i][0], ballLoc[i][1]);
-		}
-	}
-
 	return{
 		init
 	}

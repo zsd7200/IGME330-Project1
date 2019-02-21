@@ -77,12 +77,28 @@ app.utilities = (function () {
 		
 		return tempPos;
 	}
+
+		//Making the canvas go full screen
+	function requestFullscreen(element)
+	{
+		if (element.requestFullscreen) {
+			  element.requestFullscreen();
+			} else if (element.mozRequestFullscreen) {
+			  element.mozRequestFullscreen();
+			} else if (element.mozRequestFullScreen) { // camel-cased 'S' was changed to 's' in spec
+			  element.mozRequestFullScreen();
+			} else if (element.webkitRequestFullscreen) {
+			  element.webkitRequestFullscreen();
+			}
+	}
+		
     
     return{
         random,
         getMouse,
 		grad,
 		setBgColors,
-		setBeamPos
+		setBeamPos,
+		requestFullscreen
     }
 })();
