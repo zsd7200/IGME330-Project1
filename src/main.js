@@ -257,6 +257,36 @@ app.main = (function () {
 	// handle animation of shenron fading in/out
 	function shenronFade(inout)
 	{
+		/* using setTimeout recursively instead of using setInterval
+		if(timer > 0 && timer < 1)
+		{
+			ctx.globalAlpha = timer;
+			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+			ctx.globalAlpha = 1;
+			
+			// if shenron has faded in, stop this loop
+			if (timer >= 1)
+			{
+				clearInterval(fade);
+				shenDraw[0] = false;
+				shenDraw[1] = true;
+			}
+			// if shenron has faded out, do the same
+			else if (timer <= 0)
+			{
+				clearInterval(fade);
+				shenDraw[0] = false;
+			}
+			
+			if(inout == "in") { setTimeout(function(e) { shenronFade(inout, timer + .01); }, 100); }
+			else { setTimeout(function(e) { shenronFade(inout, timer - .01); }, 100); }
+
+		}
+		*/
+		
+		
+		
+		
 		// set a timer equal to 0 or 1 based on fading in or out respectively
 		let timer;
 		
@@ -279,6 +309,7 @@ app.main = (function () {
 			ctx.globalAlpha = timer;
 			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			ctx.globalAlpha = 1;
+			addEffects();
 			
 			// if shenron has faded in, stop this loop
 			if (timer >= 1)
@@ -563,20 +594,23 @@ app.main = (function () {
 		// draw shenron if he has been summoned
 		if (shenDraw[1] == true)
 			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+			
 		
 		// necessary so fighters are always above beam
 		// this call will _only_ draw fighter when song is over
 		// this means that enemy will be drawn in redrawAll(), and will be behind
 		// both the beam and the beam cap
-		drawFighters(audio.duration / audio.currentTime);
+		if (shenDraw[0] == false)
+			drawFighters(audio.duration / audio.currentTime);
 		
 		// if song is over, change enemy state to "dmgd"
 		if(audio.duration / audio.currentTime == 1)
 			pause.src = "media/fighters/" + enemy + "Dmgd.png";
 		
 		testSpin += .01;
-		addEffects();
 		
+		if(shenDraw[0] == false)
+			addEffects();
 	}
 
 	//Change the audio effect of the song based on the selection from the dropdown
@@ -598,6 +632,8 @@ app.main = (function () {
 
 	function addEffects()
 	{
+		//console.log("effectCall");
+		
 		//Grab image data
 		let imageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height);
 
@@ -657,6 +693,8 @@ app.main = (function () {
 	// helper function to draw background
 	function drawBg()
 	{
+		//console.log("call");
+		
 		if (bg.src != "media/bg/" + bgName + ".png")
 			bg.src = "media/bg/" + bgName + ".png";
 		
