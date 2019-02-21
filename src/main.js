@@ -3,6 +3,8 @@ var app = app || {}
 app.main = (function () {	
 	"use strict";
 	window.onload = init;
+
+	//Variables
 	let canvas, ctx, 
 		play, pause, 
 		audio, state, 
@@ -16,6 +18,7 @@ app.main = (function () {
 		testSpin,filterType, dropdownText,
 		analyserNode, gainNode, biquadFilter, audioCtx;
 		
+	//Arrays
 	let ballsToDraw = [];
 	let ballLoc = [];
 	let balls = [];
@@ -25,6 +28,7 @@ app.main = (function () {
 	};
 	let shenDraw = [false, false]; // shenDraw[0] is whether or not it is currently drawing, shenDraw[1] is whether or not to always draw it
 	
+	//Constants
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
 	
@@ -120,8 +124,8 @@ app.main = (function () {
 		fighter = "goku";
 		enemy = "frieza";
 		bgName = "worldTournament";
-		//ctx.fillStyle = beamColors[fighter];
 		
+		//Setting up the audio graph
 		audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
 		let sourceNode = audioCtx.createMediaElementSource(audio); 
 		analyserNode = audioCtx.createAnalyser();
@@ -137,17 +141,14 @@ app.main = (function () {
 		biquadFilter.type = "highshelf";
 		filterType = "None";
 		dropdownText = document.querySelector("#dropdownMenuButton");
-		canvas.onmousedown = doMousedown;
 
 		isFullscreen = isPaused = isInvert = isTint = isNoise = false;
-
 		testSpin = 0;
-		document.querySelector("#volumeLabel").innerHTML = 50;
 
 		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
 		
-		// handle changing of fighter/enemy
+		// handle changing of fighter/enemy/background
 		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
 
 		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/fighters/" + enemy + "Idle.png"; };
@@ -165,14 +166,20 @@ app.main = (function () {
 			redrawAll();
 		};
 
+
+		//Changing volume
+		document.querySelector("#volumeLabel").innerHTML = 50;
 		document.querySelector("#volumeSlider").oninput = function(e) {
 			gainNode.gain.value = e.target.value;
 			document.querySelector("#volumeLabel").innerHTML = Math.round((e.target.value/2 * 100));
 		}
+
+		//Handling the adding and removal of additional dragon balls
 		document.querySelector("#addBall").onclick = addBall;
 		document.querySelector("#remBall").onclick = remBall;
 		document.querySelector("#remBall").disabled = true;
 		
+		//Summoning Shenron
 		document.querySelector("#shenBut").onclick = function(e) {
 			shenDraw[0] = true;
 			document.querySelector("#shenBut").disabled = true;
@@ -185,6 +192,7 @@ app.main = (function () {
 			}, 3000); 
 		};
 		
+		//Unsummoning shenron
 		document.querySelector("#unshenBut").onclick = function(e) {
 			shenDraw[0] = true;
 			shenDraw[1] = false; // this is necessary here because of shenron being drawn in update
@@ -221,6 +229,10 @@ app.main = (function () {
 			
 		});
 
+		//Adding event for clicking on the vanvas
+		canvas.onmousedown = doMousedown;
+
+		//Adding listeners for the dropdown menu for audio effects
 		document.querySelector("#noneFilter").onclick = function(e){ filterType = "None"; dropdownText.innerHTML = "None"};
 		document.querySelector("#lowPFilter").onclick = function(e){ filterType = "lowpass"; dropdownText.innerHTML = "Lowpass"};
 		document.querySelector("#highPFilter").onclick = function(e){ filterType = "highpass"; dropdownText.innerHTML = "Highpass"};
@@ -230,6 +242,7 @@ app.main = (function () {
 
 
 
+		//Adding listeners for checkboxes
 		document.querySelector('#tintCB').checked = isTint;
 		document.querySelector('#invertCB').checked = isInvert;
 		document.querySelector('#noiseCB').checked = isNoise;
@@ -317,12 +330,9 @@ app.main = (function () {
 	{
 		audio.pause(); 
 		isPaused = true;
-		//audioCtx.suspend();
 	}
 
-	// poc play/pause button on canvas functionality
-	// does NOT work in fullscreen
-	// buttons show, but they move, so it does not work atm
+	//Allows the play and pause buttons to work within the canvas
 	function doMousedown(e)
 	{
 		let mouse = app.utilities.getMouse(e);
@@ -405,6 +415,7 @@ app.main = (function () {
 		document.querySelector("#addBall").disabled = false;
 	}
 
+	//Making the canvas go full screen
 	function requestFullscreen(element)
 	{
 		if (element.requestFullscreen) {
@@ -449,11 +460,15 @@ app.main = (function () {
 	function update()
 	{	
 		requestAnimationFrame(update);
+
+		//Changing the audio before the data is retrieved
 		modifyAudio();
 		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
 		//Showing frequency 
 		analyserNode.getByteFrequencyData(data);
 		//analyserNode.getByteTimeDomainData(data);
+
+		//Getting information as to the fullscreen status of the canvas
 		if(document.fullscreen == false)
 		{
 			isFullscreen = false;
@@ -462,6 +477,7 @@ app.main = (function () {
 		{
 			isFullscreen = true;
 		}
+
 		// clear everything and redraw all dragon balls
 		if (shenDraw[0] == false)
 			redrawAll();
@@ -495,6 +511,7 @@ app.main = (function () {
 			if (shenDraw[1] == true)
 				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
+			//Drawing bars around the center ball
 			for (let i = 0; i < 64; i++)
 			{
 				let percent = data[i] / 255;
@@ -543,7 +560,7 @@ app.main = (function () {
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";
 		
-			// draw shenron if he has been summoned
+		// draw shenron if he has been summoned
 		if (shenDraw[1] == true)
 			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 		
@@ -559,16 +576,18 @@ app.main = (function () {
 		
 		testSpin += .01;
 		addEffects();
+		
 	}
 
-
+	//Change the audio effect of the song based on the selection from the dropdown
 	function modifyAudio()
 	{
+		//If there is no filter, take away the gain from the filter
 		if(filterType == "None")
 		{
             biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-
 		}
+		//Applying the filter, adding frequency and gain to make it noticable
 		else 
 		{
 			biquadFilter.type = filterType;
