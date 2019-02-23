@@ -12,6 +12,7 @@ canvas { box-shadow: 0px 0px 10px grey; }
 /* Left and right padding for flexbox container */
 .pad { width: 10%; }
 
+/* Style the drag area */
 #drag {
 	color: white;
 	background-color: rgba(0,0,0, 0.5);
@@ -48,10 +49,6 @@ canvas { box-shadow: 0px 0px 10px grey; }
 	margin-left: 10px;
 }
 
-#shenBut {
-	align-self: center;
-}
-
 /* Fixed footer */
 #footer{
 	position: fixed;
@@ -73,11 +70,8 @@ canvas { box-shadow: 0px 0px 10px grey; }
 .nav-item a:hover { background-color: rgba(0,0,0,0.2); }
 .nav-item a:active { color: rgb(230,230,230); background-color: rgba(0,0,0,0.4); }
 
-/* Change size of custom slider */
-.custom-range {
-	width: 40%;
-	padding-top: 13px;
-}
+/* Change size of custom slider and pad it to be more in the center of label text*/
+.custom-range { width: 40%; padding-top: 13px; }
 
 /* Style custom slider to better fit the page */
 .custom-range::-webkit-slider-thumb, .custom-range::-webkit-slider-thumb:active { background: red; }
@@ -86,16 +80,14 @@ canvas { box-shadow: 0px 0px 10px grey; }
 .custom-range::-moz-range-thumb, .custom-range::-moz-range-thumb:active { background: red; }
 .custom-range:focus::-moz-range-thumb { box-shadow: 0 0 0 1px #fff, 0 0 0 .2rem rgba(255, 123, 0, .25);}
 
-label{
-	padding-right: 5px;
-	padding-left: 5px;
-}
+/* Style switches to better fit the page */
+.custom-control-input:checked ~ .custom-control-label::before { border-color: red; background-color: red; }
+.custom-control-input:focus ~ .custom-control-label::before { box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25); }
+.custom-control-input:not(:disabled):active ~ .custom-control-label::before { background-color: rgb(255, 179, 179); border-color: rgb(255, 179, 179); }
 
-/*Cursor was not correct when hovering these items*/
-.dropdown-item
-{
-	cursor: pointer;
-}
+/* Cursor was not correct when hovering these items */
+.dropdown-item { cursor: pointer; }
+
 /* Change control button style */
 .controls {
 	border: none;

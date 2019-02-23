@@ -1,25 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 	<meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<!-- https://stackoverflow.com/questions/18301745/how-to-set-up-a-favicon -->
 	<link rel="icon" type="image/png" href="media/other/favicon.png" sizes="16x16">
 	<title>Dragon Ball Audio VisualiZer</title>
+	
+	<!-- Link Bootstrap, custom font, and our own CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css" integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA" crossorigin="anonymous">
 	<link href="https://fonts.googleapis.com/css?family=Abel" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="src/style.css">
+	
+	<!-- Add in our JavaScript -->
 	<script src="src/dbClass.js"></script>
 	<script src="src/utilities.js"></script>
 	<script src="src/main.js"></script>
 	<script src="src/loader.js"></script>
 	<script src="src/drawing.js"></script>
 
-
 </head>
 <body>
+
+<!-- Wrap everything in a flexbox -->
 <div id="flex-container">
 
+	<!-- Give padding on the left -->
 	<div class="pad"></div>
 
 	<canvas width=700 height=600>Browser does not support canvas.</canvas>
@@ -27,35 +33,47 @@
 	<br>
 	
 	<div id="controlContainer">
+	
+			<!-- Bootstrap navigation tab setup -->
 			<ul class="nav nav-tabs" id="myTab" role="tablist">
-					<li class="nav-item">
+			
+				<!-- Define tabs -->
+				<li class="nav-item">
 					  <a class="nav-link active" id="controls-tab" data-toggle="tab" href="#controls" role="tab" aria-controls="controls" aria-selected="true">Controls</a>
-					</li>
-					<li class="nav-item">
-					  <a class="nav-link" id="effects-tab" data-toggle="tab" href="#effects" role="tab" aria-controls="effects" aria-selected="false">Effects</a>
-					</li>
-				  </ul>
-				  <div class="tab-content" id="myTabContent">
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" id="effects-tab" data-toggle="tab" href="#effects" role="tab" aria-controls="effects" aria-selected="false">Effects</a>
+				</li>
+			</ul>
+			
+				<!-- Controls tab content -->
+				<div class="tab-content" id="myTabContent">
 					<div class="tab-pane fade show active" id="controls" role="tabpanel" aria-labelledby="controls-tab">
+					
+					<!-- Load chala.mp3 first -->
 					<audio src="media/music/chala.mp3" id="audio"></audio>
-						<label>Select a Song:
-								<select class="form-control" id="songSelector">
-									<option value="chala" selected>Head Cha La</option>
-									<option value="tank">Tank!</option>
-									<option value="dmp">Digging My Potato</option>
-									<option value="rivers">Rivers in the Desert</option>
-									<option value="door">door</option>
-								</select>
-						</label>
+					
+					<!-- Dropdown for song selection -->
+					<label>Select a Song:
+							<select class="form-control" id="songSelector">
+								<option value="chala" selected>Head Cha La</option>
+								<option value="tank">Tank!</option>
+								<option value="dmp">Digging My Potato</option>
+								<option value="rivers">Rivers in the Desert</option>
+								<option value="door">door</option>
+							</select>
+					</label>
 						
-						<p>or...</p>
+					<p>or...</p>
+					
+					<!-- Area for drag and drop music files -->
+					<div id="dragBox">
+						<p id="drag">Click here to upload music or drag music file here</p>
+						<input type="file" id="clickUpload" hidden>
+					</div>
 						
-						<div id="dragBox">
-							<p id="drag">Click here to upload music or drag music file here</p>
-							<input type="file" id="clickUpload" hidden></input>
-						</div>
-							
-						<label>Choose a Fighter:
+						<!-- Choose a character to be on the left side of the screen -->
+						<label title="For the left side of the screen!">Choose a Fighter:
 								<select class="form-control" id="playSelector">
 									<option value="goku" selected>Goku</option>
 									<option value="vegeta">Vegeta</option>
@@ -70,7 +88,8 @@
 								</select>
 						</label>
 					
-						<label>Choose an Enemy:
+						<!-- Choose an enemy for the right side of the screen -->
+						<label title="For the right side of the screen!">Choose an Enemy:
 								<select class="form-control" id="pauseSelector">
 									<option value="goku">Goku</option>
 									<option value="vegeta">Vegeta</option>
@@ -85,7 +104,8 @@
 								</select>
 						</label>
 						
-						<label>Background:
+						<!-- Change background -->
+						<label title="Change where they fight!">Background:
 								<select class="form-control" id="bgSelector">
 									<option value="worldTournament" selected>World Tournament Stage</option>
 									<option value="namek">Namek</option>
@@ -97,25 +117,42 @@
 						</label>
 						
 						<br>
-				
+						
+						<!-- Volume slider -->
 						<label for="volumeSlider">Volume:</label>
 						<input type="range" id="volumeSlider" class="custom-range" min="0" max="2" value="1" step="0.01">
 						<span id="volumeLabel">???</span>
 						
-						</div>
+					</div>
 						
-					
+					<!-- Effects tab -->
 					<div class="tab-pane fade" id="effects" role="tabpanel" aria-labelledby="effects-tab">	<label for="ballRad">Ball Radius:</label>
+						
+						<!-- Change ball radius -->
 						<input type="range" id="ballRad" class="custom-range" min="15" max="130" value="70">
 						<span id="radiusLabel">???</span>
 
 						<br>
-						<span><label for="tintCB">Blue Tint </label><input type="checkbox" id="tintCB"></span>
-						<span><label for="invertCB">Invert Colors </label><input type="checkbox" id="invertCB"></span>
-						<span><label for="noiseCB">Add Noise </label><input type="checkbox" id="noiseCB"></span>
+						
+						<!-- Switches for visual effects -->
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" id="tintCB">
+							<label class="custom-control-label" for="tintCB">Blue Tint</label>
+						</div>
+						
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" id="invertCB">
+							<label class="custom-control-label" for="invertCB">Invert Colors</label>
+						</div>
+						
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" id="noiseCB">
+							<label class="custom-control-label" for="noiseCB">Add Noise</label>
+						</div>
 
 						<br>
 
+						<!-- Dropdown for audio effects -->
 						<div class="dropdown">
 							<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								Select Filter Type
@@ -129,32 +166,32 @@
 								<p class="dropdown-item" id="highSFilter">Highshelf</p>
 							</div>
 						</div>
-						
 					</div>
-		
-				  </div>
+				</div>
+
 	<br>
 	
+	<!-- Buttons for adding/removing dragon balls and going full screen -->
 	<button id="addBall" class="btn btn-dark" title="Add an extra Dragon Ball around the center.">Add Ball</button>
 	<button id="remBall" class="btn btn-dark" title="Remove a Dragon Ball around the center.">Remove Ball</button>
 	<button id="fullscreenBut" class="btn btn-dark" title="Make the visualiZer full screen">Full Screen</button>
 	
 	<br><br>
 	
+	<!-- Buttons to summon/unsummon Shenron -->
 	<button id="shenBut" class="btn btn-dark" title="Summon the almighty dragon, Shenron! Requires all 7 Dragon Balls!" disabled>Summon Shenron!</button>
 	<button id="unshenBut" class="btn btn-dark" title="Tell that pesky dragon to beat it, bozo!" disabled>Unsummon Shenron!</button>
 	</div>
 	
-
+	<!-- Give padding on the right -->
 	<div class="pad"></div>
 	
-
-	
+	<!-- Fixed footer at the bottom of the page -->
 	<div id="footer">
 		<p>created by Zack Dunham and Tristan Marshall<p>
 	</div>
-
 	
+	<!-- Add in Bootstrap JS depencendies -->
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js" integrity="sha384-7aThvCh9TypR7fIc2HV4O/nFMVCBwyIUKL8XCtKE+8xgCgl/PQGuFsvShjr74PBp" crossorigin="anonymous"></script>
