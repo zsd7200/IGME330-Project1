@@ -40,8 +40,9 @@ app.drawing = (function () {
 
     }
     
-    function addEffects(ctx, isTint, isInvert, isNoise)
+    function addEffects(ctx, effects)
 	{
+		
 		//Grab image data
 		let imageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height);
 
@@ -55,12 +56,12 @@ app.drawing = (function () {
 		let i;
 		for(i = 0; i < length; i +=4)
 		{
-			if(isTint)
+			if(effects["isTint"])
 			{
 				data[i+2] = data[i+2] + 100;
 			}
 
-			if(isInvert)
+			if(effects["isInvert"])
 			{
 				let red = data[i], green = data[i+1], blue = data[i+2];
 				data[i] = 255 - red;
@@ -69,7 +70,7 @@ app.drawing = (function () {
 
 			}
 
-			if(isNoise && Math.random() < .1)
+			if(effects["isNoise"] && Math.random() < .1)
 			{
 				data[i] = data[i+1] = data[i+2] = 128
 

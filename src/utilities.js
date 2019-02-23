@@ -77,6 +77,22 @@ app.utilities = (function () {
 		
 		return tempPos;
 	}
+	
+	// helper function to update ballLoc array based on ballRadius
+	function updateBallLoc(ballX, ballY, ballRadius)
+	{		
+		let tempLoc = [
+			[ballX, ballY],
+			[ballX + ballRadius * 1.75, ballY],
+			[ballX - ballRadius * 1.75, ballY],
+			[ballX + ballRadius * 1.25, ballY - ballRadius * 1.25],
+			[ballX - ballRadius * 1.25, ballY - ballRadius * 1.25],
+			[ballX + ballRadius * 1.25, ballY + ballRadius * 1.25],
+			[ballX - ballRadius * 1.25, ballY + ballRadius * 1.25]
+		];
+		
+		return tempLoc;
+	}
 
 		//Making the canvas go full screen
 	function requestFullscreen(element)
@@ -99,6 +115,7 @@ app.utilities = (function () {
 		grad,
 		setBgColors,
 		setBeamPos,
+		updateBallLoc,
 		requestFullscreen
     }
 })();

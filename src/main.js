@@ -13,9 +13,8 @@ app.main = (function () {
 		isFullscreen,
 		beamPos, beamCap, 
 		isPaused,
-		ballRadius, stars, 
-		isInvert, isTint, isNoise,
-		testSpin,filterType, dropdownText,
+		ballRadius, stars,
+		testSpin, filterType, dropdownText,
 		analyserNode, gainNode, biquadFilter, audioCtx;
 		
 	//Arrays
@@ -26,7 +25,19 @@ app.main = (function () {
 		"play" : [100, 176, 410, 260],
 		"pause" : [525, 176, 1020, 260]
 	};
-	let shenDraw = [false, false]; // shenDraw[0] is whether or not it is currently drawing, shenDraw[1] is whether or not to always draw it
+	
+	// dictionary of bools for shenron drawing
+	let shenDraw = {
+		"currentlyDrawing" : false,
+		"isDrawn" : false
+	};
+	
+	// dictionary of bools for visual effects
+	let effects = {
+		"isTint" : false,
+		"isInvert" : false,
+		"isNoise" : false
+	};
 	
 	//Constants
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
@@ -45,7 +56,6 @@ app.main = (function () {
 	// beamColors[fighter][2] = lightest color	(third)
 	// then BEAM_MIDDLE_COLOR
 	// beamColors[fighter][3] = beam endcap color
-	
 	const beamColors = {
 		"goku" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],
 		"vegeta" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"],
@@ -53,7 +63,7 @@ app.main = (function () {
 		"futureTrunks" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
 		"gotenks" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
 		"android18" : ["#f8c518", "#f0e030", "#f8f878", "yellow"],
-		"dad" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],
+		"dad" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],					// dad = bardock
 		"cell" : ["#009aa4", "#00cedb", "#00f0ff", "blue"],
 		"majinbuu" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"],
 		"frieza" : ["#9e00a0", "#d100d4", "#fc00ff", "purple"]				
@@ -63,6 +73,8 @@ app.main = (function () {
 	{
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
+		
+		// add listeners for dragging and dropping audio files
 		let dragBox = document.querySelector("#dragBox");
 		let drag = document.querySelector("#drag");
 
@@ -118,7 +130,7 @@ app.main = (function () {
 		
 		// draw big ball in center of canvas and push it to array of balls
 		balls.push(new DragonBall(ctx, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius, stars));
-		updateBallLoc();
+		ballLoc = app.utilities.updateBallLoc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius);
 		
 		// set default fighter and enemy to Goku/Frieza
 		fighter = "goku";
@@ -142,7 +154,7 @@ app.main = (function () {
 		filterType = "None";
 		dropdownText = document.querySelector("#dropdownMenuButton");
 
-		isFullscreen = isPaused = isInvert = isTint = isNoise = false;
+		isFullscreen = isPaused = effects["isInvert"] = effects["isTint"] = effects["isNoise"] = false;
 		testSpin = 0;
 
 		// attach musicChange script
@@ -162,7 +174,7 @@ app.main = (function () {
 			ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 			
 			// updateBallLoc updates ballLoc array based on new ballRadius
-			updateBallLoc();
+			ballLoc = app.utilities.updateBallLoc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius);
 			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 		};
 
@@ -181,7 +193,7 @@ app.main = (function () {
 		
 		//Summoning Shenron
 		document.querySelector("#shenBut").onclick = function(e) {
-			shenDraw[0] = true;
+			shenDraw["currentlyDrawing"] = true;
 			document.querySelector("#shenBut").disabled = true;
 			document.querySelector("#remBall").disabled = true;			
 			shenronFade("in");
@@ -194,8 +206,8 @@ app.main = (function () {
 		
 		//Unsummoning shenron
 		document.querySelector("#unshenBut").onclick = function(e) {
-			shenDraw[0] = true;
-			shenDraw[1] = false; // this is necessary here because of shenron being drawn in update
+			shenDraw["currentlyDrawing"] = true;
+			shenDraw["isDrawn"] = false; // this is necessary here because of shenron being drawn in update
 			document.querySelector("#unshenBut").disabled = true;
 			shenronFade("out");
 			
@@ -240,15 +252,13 @@ app.main = (function () {
 		document.querySelector("#lowSFilter").onclick = function(e){ filterType = "lowshelf"; dropdownText.innerHTML = "Lowshelf"};
 		document.querySelector("#highSFilter").onclick = function(e){ filterType = "highshelf"; dropdownText.innerHTML = "Highshelf"};
 
-
-
 		//Adding listeners for checkboxes
-		document.querySelector('#tintCB').checked = isTint;
-		document.querySelector('#invertCB').checked = isInvert;
-		document.querySelector('#noiseCB').checked = isNoise;
-		document.querySelector('#tintCB').onchange = e => isTint = e.target.checked;
-		document.querySelector('#invertCB').onchange = e => isInvert = e.target.checked;
-		document.querySelector('#noiseCB').onchange = e => isNoise = e.target.checked;
+		document.querySelector('#tintCB').checked = effects["isTint"];
+		document.querySelector('#invertCB').checked = effects["isInvert"];
+		document.querySelector('#noiseCB').checked = effects["isNoise"];
+		document.querySelector('#tintCB').onchange = e => effects["isTint"] = e.target.checked;
+		document.querySelector('#invertCB').onchange = e => effects["isInvert"] = e.target.checked;
+		document.querySelector('#noiseCB').onchange = e => effects["isNoise"] = e.target.checked;
 
 		// update for beam creation and animation
 		update();
@@ -279,20 +289,20 @@ app.main = (function () {
 			ctx.globalAlpha = timer;
 			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			ctx.globalAlpha = 1;
-			app.drawing.addEffects(ctx, isTint, isInvert, isNoise);
+			app.drawing.addEffects(ctx, effects);
 			
 			// if shenron has faded in, stop this loop
 			if (timer >= 1)
 			{
 				clearInterval(fade);
-				shenDraw[0] = false;
-				shenDraw[1] = true;
+				shenDraw["currentlyDrawing"] = false;
+				shenDraw["isDrawn"] = true;
 			}
 			// if shenron has faded out, do the same
 			else if (timer <= 0)
 			{
 				clearInterval(fade);
-				shenDraw[0] = false;
+				shenDraw["currentlyDrawing"] = false;
 			}
 		}, 25);
 	}
@@ -466,7 +476,7 @@ app.main = (function () {
 		}
 
 		// clear everything and redraw all dragon balls
-		if (shenDraw[0] == false)
+		if (shenDraw["currentlyDrawing"] == false)
 			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 
 		// Changing the state of the sprite based on the playing status
@@ -495,7 +505,7 @@ app.main = (function () {
 			ctx.drawImage(beamCap, (beamPos[fighter][0] - 13) + (525 * percent), beamPos[fighter][1] - 13);
 			
 			// draw shenron if he has been summoned
-			if (shenDraw[1] == true)
+			if (shenDraw["isDrawn"] == true)
 				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
 			//Drawing bars around the center ball
@@ -546,17 +556,13 @@ app.main = (function () {
 		}
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";
-		
-		// draw shenron if he has been summoned
-		if (shenDraw[1] == true)
-			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
 		
 		// necessary so fighters are always above beam
 		// this call will _only_ draw fighter when song is over
 		// this means that enemy will be drawn in redrawAll(), and will be behind
 		// both the beam and the beam cap
-		if (shenDraw[0] == false)
+		//if (shenDraw["currentlyDrawing"] == false)
 			app.drawing.drawFighters(ctx, play, CANVAS_HEIGHT, pause, audio.duration / audio.currentTime);
 		
 		// if song is over, change enemy state to "dmgd"
@@ -565,8 +571,8 @@ app.main = (function () {
 		
 		testSpin += .01;
 		
-		if(shenDraw[0] == false)
-			app.drawing.addEffects(ctx, isTint, isInvert, isNoise);
+		if(shenDraw["currentlyDrawing"] == false)
+			app.drawing.addEffects(ctx, effects);
 	}
 
 	//Change the audio effect of the song based on the selection from the dropdown
@@ -584,25 +590,6 @@ app.main = (function () {
 			biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
             biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
 		}
-	}
-
-	
-	
-	// helper function to update ballLoc array based on ballRadius
-	function updateBallLoc()
-	{
-		let ballX = CANVAS_WIDTH/2;
-		let ballY = CANVAS_HEIGHT/2;
-		
-		ballLoc = [
-			[ballX, ballY],
-			[ballX + ballRadius * 1.75, ballY],
-			[ballX - ballRadius * 1.75, ballY],
-			[ballX + ballRadius * 1.25, ballY - ballRadius * 1.25],
-			[ballX - ballRadius * 1.25, ballY - ballRadius * 1.25],
-			[ballX + ballRadius * 1.25, ballY + ballRadius * 1.25],
-			[ballX - ballRadius * 1.25, ballY + ballRadius * 1.25]
-		];
 	}
 	
 	return{
