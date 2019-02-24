@@ -354,6 +354,7 @@ app.main = (function () {
 	// State is not set to "idle" because this would look jarring, as the beam stays out
 	function pauseMusic()
 	{
+		audioCtx.suspend();
 		audio.pause(); 
 		isPaused = true;
 	}
@@ -526,61 +527,58 @@ app.main = (function () {
 			if (shenDraw["isDrawn"] == true)
 				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
-			//Allowing Frequency data to be drawn with two different styles
-			//Drawing with rectangular bars
-			if(drawStyle == "rect")
+			//Drawing bars around the center ball
+			for (let i = 0; i < 64; i++)
 			{
-				//Drawing bars around the center ball
-				for (let i = 0; i < 64; i++)
+				let percent = data[i] / 255;
+				percent = percent < .07 ? .07 : percent;
+				let bar = balls[0].maxBar;
+				let barPerc = bar * percent;
+				
+				ctx.save();
+				ctx.fillStyle = beamColors[fighter][2];
+				ctx.strokeStyle = beamColors[fighter][2];
+				ctx.translate(balls[0].x, balls[0].y);		// behind center ball
+				ctx.scale(1, -1);
+				
+				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
+				ctx.rotate(rotationAmount + spinAmount);
+				ctx.translate(0, bar / 1.1);
+				
+				switch(drawStyle)
 				{
-					let percent = data[i] / 255;
-					percent = percent < .07 ? .07 : percent;
-					
-					ctx.save();
-					ctx.fillStyle = beamColors[fighter][2];
-					ctx.translate(balls[0].x, balls[0].y);		// behind center ball
-					ctx.scale(1, -1);
-					
-					let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
-					ctx.rotate(rotationAmount + spinAmount);
-					ctx.translate(0, balls[0].maxBar / 1.1);
-					ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
-					
-					// stroke rects so they can be seen on any bg
-					ctx.lineWidth = BAR_WIDTH / 4;
-					ctx.strokeStyle = beamColors[fighter][0];
-					ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
-					
-					ctx.restore();
+					default:
+					case "rect":
+						ctx.fillRect(0, 0, BAR_WIDTH, barPerc);
+						
+						// stroke rects so they can be seen on any bg
+						ctx.lineWidth = BAR_WIDTH / 4;
+						ctx.strokeStyle = beamColors[fighter][0];
+						ctx.strokeRect(0, 0, BAR_WIDTH, barPerc);
+						break;
+						
+					case "line":
+						ctx.moveTo(0,0)
+						ctx.lineTo(0, barPerc);
+						ctx.lineWidth = BAR_WIDTH / 3;
+						ctx.closePath();
+						ctx.stroke();
+						break;
 				}
+
+				// poc lines
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = beamColors[fighter][3];
+				let start = i - 1 < 0 ? data[0] / 255 : data[i - 1] / 255;
+				
+				ctx.beginPath();					
+				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * 2.25, bar * start);
+				ctx.stroke();
+				ctx.closePath();					
+				
+				ctx.restore();
 			}
-			//Drawing with line bars
-			else if(drawStyle == "line")
-			{
-				//Drawing lines around the center ball
-				for (let i = 0; i < 64; i++)
-				{
-					let percent = data[i] / 255;
-					percent = percent < .07 ? .07 : percent;
-					
-					ctx.save();
-					ctx.strokeStyle = beamColors[fighter][2];
-					ctx.translate(balls[0].x, balls[0].y);		// behind center ball
-					ctx.scale(1, -1);
-					
-					let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
-					ctx.rotate(rotationAmount + spinAmount);
-					ctx.translate(0, balls[0].maxBar / 1.1);
-					ctx.moveTo(0,0)
-					ctx.lineTo(0,balls[0].maxBar * percent);
-					
-					//Adding the stroke so the line is seen
-					ctx.lineWidth = BAR_WIDTH / 3;
-					ctx.closePath();
-					ctx.stroke();
-					ctx.restore();
-				}
-			}
+			
 			// make sure first ball is redrawn over bars
 			balls[0].redraw();
 
