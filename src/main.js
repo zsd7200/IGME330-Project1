@@ -14,6 +14,7 @@ app.main = (function () {
 		beamPos, beamCap, 
 		isPaused,
 		ballRadius, stars,
+		drawStyle,
 		spinAmount, filterType, dropdownText,
 		analyserNode, gainNode, biquadFilter, audioCtx;
 		
@@ -156,7 +157,7 @@ app.main = (function () {
 
 		isFullscreen = isPaused = effects["isInvert"] = effects["isTint"] = effects["isNoise"] = false;
 		spinAmount = 0;
-
+		drawStyle = "rect";
 		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
 		
@@ -167,6 +168,11 @@ app.main = (function () {
 		
 		document.querySelector("#bgSelector").onchange = function (e) { bgName = e.target.value; app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc); };
 		
+		//Handling the changing of the drawing style for the frequency
+		document.querySelector("#rect").onchange = function(e){drawStyle = e.target.value;}
+		document.querySelector("#line").onchange = function(e){drawStyle = e.target.value;}
+
+
 		// handle changing stars and radius based on sliders
 		document.querySelector("#ballRad").oninput = function(e) { 
 			ballRadius = parseInt(e.target.value, 10);
@@ -508,30 +514,63 @@ app.main = (function () {
 			if (shenDraw["isDrawn"] == true)
 				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
-			//Drawing bars around the center ball
-			for (let i = 0; i < 64; i++)
+			if(drawStyle == "rect")
 			{
-				let percent = data[i] / 255;
-				percent = percent < .07 ? .07 : percent;
-				
-				ctx.save();
-				ctx.fillStyle = beamColors[fighter][2];
-				ctx.translate(balls[0].x, balls[0].y);		// behind center ball
-				ctx.scale(1, -1);
-				
-				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
-				ctx.rotate(rotationAmount + spinAmount);
-				ctx.translate(0, balls[0].maxBar / 1.1);
-				ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
-				
-				// stroke rects so they can be seen on any bg
-				ctx.lineWidth = BAR_WIDTH / 4;
-				ctx.strokeStyle = beamColors[fighter][0];
-				ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
-				
-				ctx.restore();
+				//Drawing bars around the center ball
+				for (let i = 0; i < 64; i++)
+				{
+					let percent = data[i] / 255;
+					percent = percent < .07 ? .07 : percent;
+					
+					ctx.save();
+					ctx.fillStyle = beamColors[fighter][2];
+					ctx.translate(balls[0].x, balls[0].y);		// behind center ball
+					ctx.scale(1, -1);
+					
+					let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
+					ctx.rotate(rotationAmount + spinAmount);
+					ctx.translate(0, balls[0].maxBar / 1.1);
+					ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
+					
+					// stroke rects so they can be seen on any bg
+					ctx.lineWidth = BAR_WIDTH / 4;
+					ctx.strokeStyle = beamColors[fighter][0];
+					ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
+					
+					ctx.restore();
+				}
 			}
-			
+			else if(drawStyle == "line")
+			{
+				//Drawing bars around the center ball
+				for (let i = 0; i < 64; i++)
+				{
+					let percent = data[i] / 255;
+					percent = percent < .07 ? .07 : percent;
+					
+					ctx.save();
+					ctx.strokeStyle = beamColors[fighter][2];
+					ctx.translate(balls[0].x, balls[0].y);		// behind center ball
+					ctx.scale(1, -1);
+					
+					let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
+					ctx.rotate(rotationAmount + spinAmount);
+					ctx.translate(0, balls[0].maxBar / 1.1);
+					//ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
+					ctx.moveTo(0,0)
+					ctx.lineTo(0,balls[0].maxBar * percent);
+					
+
+					// stroke rects so they can be seen on any bg
+					ctx.lineWidth = BAR_WIDTH / 3;
+					//ctx.strokeStyle = beamColors[fighter][0];
+					ctx.closePath();
+					ctx.stroke();
+					//ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
+					
+					ctx.restore();
+				}
+			}
 			// make sure first ball is redrawn over bars
 			balls[0].redraw();
 
