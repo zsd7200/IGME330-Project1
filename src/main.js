@@ -637,22 +637,25 @@ app.main = (function () {
 			app.drawing.addEffects(ctx, effects);
 	}
 
+	let meme;
+
 	//Change the audio effect of the song based on the selection from the dropdown
 	function modifyAudio()
 	{
 		//If there is no filter, take away the gain from the filter
 		if(filterType == "none")
 		{
+			biquadFilter.type = "highshelf";
 			biquadFilter.frequency.setValueAtTime(0, audioCtx.currentTime);
 			biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-
 		}
+		
 		//Applying the filter, adding frequency and gain to make it noticable
 		else 
 		{
 			biquadFilter.type = filterType;
 			biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-      biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
+			biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
 		}
 	}
 	
