@@ -2,20 +2,18 @@ var app = app || {}
 
 app.main = (function () {	
 	"use strict";
-	window.onload = init;
 
 	//Variables
 	let canvas, ctx, 
 		play, pause, 
-		audio, state, 
+		audio, state, isPaused,
 		fighter, enemy, shen,
 		bg, bgName, bgColors,
 		isFullscreen,
-		beamPos, beamCap, 
-		isPaused,
+		beamPos, beamCap, drawStyle,
 		ballRadius, stars,
-		drawStyle,
-		spinAmount, filterType, dropdownText,
+		spinAmount, spinSpeed, 
+		filterType, dropdownText,
 		analyserNode, gainNode, biquadFilter, audioCtx;
 		
 	//Arrays
@@ -43,9 +41,7 @@ app.main = (function () {
 	//Constants
 	const BEAM_MIDDLE_COLOR = "#f3f3f3";
 	const BEAM_HEIGHT = 30;
-	
 	const BAR_WIDTH = 5;
-	const PADDING = 5;
 	
 	const CANVAS_HEIGHT = 600;
 	const CANVAS_WIDTH = 700;
@@ -72,6 +68,7 @@ app.main = (function () {
 	
 	function init()
 	{
+		//Getting the canvas
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
 		
@@ -150,14 +147,17 @@ app.main = (function () {
 		gainNode.connect(biquadFilter);
 		biquadFilter.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);
-
 		biquadFilter.type = "highshelf";
 		filterType = "none";
-		dropdownText = document.querySelector("#dropdownMenuButton");
 
+		//Initializing miscellaneous variables
 		isFullscreen = isPaused = effects["isInvert"] = effects["isTint"] = effects["isNoise"] = false;
 		spinAmount = 0;
+		spinSpeed = 0;
 		drawStyle = "rect";
+		dropdownText = document.querySelector("#dropdownMenuButton");
+
+
 		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
 		
@@ -190,6 +190,13 @@ app.main = (function () {
 		document.querySelector("#volumeSlider").oninput = function(e) {
 			gainNode.gain.value = e.target.value;
 			document.querySelector("#volumeLabel").innerHTML = Math.round((e.target.value/2 * 100));
+		}
+
+		//Changing the speed at which the bars around the ball spin
+		document.querySelector("#spinSpeedLabel").innerHTML = 0;
+		document.querySelector("#spinSpeed").oninput = function(e) {
+			spinSpeed = (.01 * e.target.value);
+			document.querySelector("#spinSpeedLabel").innerHTML = e.target.value;
 		}
 
 		//Handling the adding and removal of additional dragon balls
@@ -234,6 +241,7 @@ app.main = (function () {
 		document.addEventListener("keydown", function(event){
 			//Using the spacebar to toggle play pause 
 			if(event.keyCode == 32)
+				//Toggling between the two states
 				if(isPaused)
 					playMusic();
 				else
@@ -313,6 +321,7 @@ app.main = (function () {
 		}, 25);
 	}
 
+	//Handling the addition of custom music via drag and drop
 	function customMusicHandler(file)
 	{
 		// make sure it's a useable type of audio, it doesn't like wma for some reason
@@ -367,6 +376,7 @@ app.main = (function () {
 				pauseMusic();
 			}
 		}
+		//If fullscreen, use alternate positions for play and pause
 		else
 		{
 			if(mouse.x > buttonLoc["play"][2] && mouse.x < buttonLoc["play"][2] + 64 && mouse.y > buttonLoc["play"][3] - 64 && mouse.y < buttonLoc["play"][3])
@@ -428,6 +438,7 @@ app.main = (function () {
 			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 		}
 		
+		//Disabling the ability to summon Shenron, and enabling the ability to add balls
 		document.querySelector("#shenBut").disabled = true;
 		document.querySelector("#addBall").disabled = false;
 	}
@@ -449,7 +460,7 @@ app.main = (function () {
 			pause.src = "media/fighters/" + enemy + "Idle.png";
 		}
 		
-		// handle door.wav since it's not an mp3 lmao
+		// handle door.wav since it's not an mp3
 		if (e.target.value != "door")
 			audio.src = "media/music/" + e.target.value + ".mp3";
 		else
@@ -467,9 +478,10 @@ app.main = (function () {
 		//Changing the audio before the data is retrieved
 		modifyAudio();
 		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
+		
 		//Showing frequency 
 		analyserNode.getByteFrequencyData(data);
-		//analyserNode.getByteTimeDomainData(data);
+
 
 		//Getting information as to the fullscreen status of the canvas
 		if(document.fullscreen == false)
@@ -514,6 +526,8 @@ app.main = (function () {
 			if (shenDraw["isDrawn"] == true)
 				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
+			//Allowing Frequency data to be drawn with two different styles
+			//Drawing with rectangular bars
 			if(drawStyle == "rect")
 			{
 				//Drawing bars around the center ball
@@ -540,9 +554,10 @@ app.main = (function () {
 					ctx.restore();
 				}
 			}
+			//Drawing with line bars
 			else if(drawStyle == "line")
 			{
-				//Drawing bars around the center ball
+				//Drawing lines around the center ball
 				for (let i = 0; i < 64; i++)
 				{
 					let percent = data[i] / 255;
@@ -556,18 +571,13 @@ app.main = (function () {
 					let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
 					ctx.rotate(rotationAmount + spinAmount);
 					ctx.translate(0, balls[0].maxBar / 1.1);
-					//ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
 					ctx.moveTo(0,0)
 					ctx.lineTo(0,balls[0].maxBar * percent);
 					
-
-					// stroke rects so they can be seen on any bg
+					//Adding the stroke so the line is seen
 					ctx.lineWidth = BAR_WIDTH / 3;
-					//ctx.strokeStyle = beamColors[fighter][0];
 					ctx.closePath();
 					ctx.stroke();
-					//ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
-					
 					ctx.restore();
 				}
 			}
@@ -576,8 +586,6 @@ app.main = (function () {
 
 			//Switching to waveform data
 			analyserNode.getByteTimeDomainData(data);
-			let maxCurve = 50;
-			let tempRadius = ballRadius / 2;
 
 			//Drawing bars around the center ball
 			for (let i = 0; i < 64; i++)
@@ -605,55 +613,6 @@ app.main = (function () {
 				
 				ctx.restore();
 			}
-			//Displaying the waveform as an innercircle to the ball, scalable to multiple balls
-			//TODO: Figure out how to only display parts of the waveform, if we want multiple balls
-			/*for(let i = 0; i < 64; i++)
-			{
-				
-				let lastX;
-				let lastY;
-				let thisX;
-				let thisY;
-				for(let j = 0; j < balls.length; j++)
-				{
-					let percent2 = data[i] / 255;
-
-					ctx.save();
-					ctx.translate(balls[j].x, balls[j].y);
-
-					let rotationAmount = (Math.PI * 2) * ((i) / 64);
-					let rotationAmount2 = (Math.PI * 2) * ((i + 1) / 64);
-
-					//ctx.rotate(rotationAmount);
-
-					ctx.strokeStyle = "rgba(100,100,100,.3)";
-					if(i == 0)
-					{
-						ctx.moveTo(tempRadius + maxCurve * percent2, 0);
-						lastX = tempRadius + maxCurve;
-						lastY = 0;
-						//console.log("here");
-					}
-					else
-					{
-						thisX = (tempRadius + (maxCurve * percent2)) * Math.cos(rotationAmount);
-						thisY = (tempRadius + (maxCurve * percent2)) * Math.sin(rotationAmount);
-
-						ctx.quadraticCurveTo(lastX, lastY, thisX, thisY);
-						
-						lastX = thisX;
-						lastY = thisY;
-						//console.log("other");
-					}
-
-					//ctx.fill();
-					//ctx.closePath();
-					ctx.lineWidth = 5;
-					ctx.stroke();
-					ctx.restore();
-				}
-			}
-			*/
 		}
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";
@@ -663,20 +622,18 @@ app.main = (function () {
 		// this call will _only_ draw fighter when song is over
 		// this means that enemy will be drawn in redrawAll(), and will be behind
 		// both the beam and the beam cap
-		//if (shenDraw["currentlyDrawing"] == false)
-			app.drawing.drawFighters(ctx, play, CANVAS_HEIGHT, pause, audio.duration / audio.currentTime);
+		app.drawing.drawFighters(ctx, play, CANVAS_HEIGHT, pause, audio.duration / audio.currentTime);
 		
 		// if song is over, change enemy state to "dmgd"
 		if(audio.duration / audio.currentTime == 1)
 			pause.src = "media/fighters/" + enemy + "Dmgd.png";
 		
-		spinAmount += .01;
+		//Adding to the amount the bars spin 
+		spinAmount += spinSpeed;
 		
 		if(shenDraw["currentlyDrawing"] == false)
 			app.drawing.addEffects(ctx, effects);
 	}
-
-	let meme;
 
 	//Change the audio effect of the song based on the selection from the dropdown
 	function modifyAudio()
@@ -684,7 +641,7 @@ app.main = (function () {
 		//If there is no filter, take away the gain from the filter
 		if(filterType == "none")
 		{
-			biquadFilter.type = "highshelf";
+			biquadFilter.type = "highshelf"; //Necessary so the filter correctly goes back to having no effects applied
 			biquadFilter.frequency.setValueAtTime(0, audioCtx.currentTime);
 			biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
 		}

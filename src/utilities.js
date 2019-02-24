@@ -1,7 +1,7 @@
 var app = app || {}
 
 app.utilities = (function () {
-    // randy helper function
+    //Helper function for getting Random number
     function random(min, max, arr)
     {   
         let num = Math.floor((Math.random() * max) + min);
@@ -93,7 +93,7 @@ app.utilities = (function () {
 		return tempLoc;
 	}
 
-		//Making the canvas go full screen
+	//Making the canvas go full screen
 	function requestFullscreen(element)
 	{
 		if (element.requestFullscreen) {
@@ -111,10 +111,10 @@ app.utilities = (function () {
     return{
         random,
         getMouse,
-		grad,
-		setBgColors,
-		setBeamPos,
-		updateBallLoc,
-		requestFullscreen
+			grad,
+			setBgColors,
+			setBeamPos,
+			updateBallLoc,
+			requestFullscreen
     }
 })();

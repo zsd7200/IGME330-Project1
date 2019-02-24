@@ -39,7 +39,8 @@ app.drawing = (function () {
 		}
 
     }
-    
+	
+	//Adding visual effects to the 
     function addEffects(ctx, effects)
 	{
 		
@@ -49,18 +50,17 @@ app.drawing = (function () {
 		//Getting info about the array
 		let data = imageData.data;
 		let length = data.length;
-		let width = imageData.width;
 
-		//Looping through the pixels
-
-		let i;
-		for(i = 0; i < length; i +=4)
+		//Looping through the pixels to add effects
+		for(let i = 0; i < length; i +=4)
 		{
+			//Add blue tint
 			if(effects["isTint"])
 			{
 				data[i+2] = data[i+2] + 100;
 			}
 
+			//Invert colors
 			if(effects["isInvert"])
 			{
 				let red = data[i], green = data[i+1], blue = data[i+2];
@@ -70,6 +70,7 @@ app.drawing = (function () {
 
 			}
 
+			//Add visual noise
 			if(effects["isNoise"] && Math.random() < .1)
 			{
 				data[i] = data[i+1] = data[i+2] = 128
@@ -83,6 +84,7 @@ app.drawing = (function () {
 	}
 
 
+	//Redrawing all the main elements onto the canvas
     function redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc)
 	{
 		// redraw background

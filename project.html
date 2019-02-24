@@ -126,11 +126,19 @@
 					</div>
 						
 					<!-- Effects tab -->
-					<div class="tab-pane fade" id="effects" role="tabpanel" aria-labelledby="effects-tab">	<label for="ballRad">Ball Radius:</label>
+					<div class="tab-pane fade" id="effects" role="tabpanel" aria-labelledby="effects-tab">	
 						
 						<!-- Change ball radius -->
+						<label for="ballRad">Ball Radius:</label>
 						<input type="range" id="ballRad" class="custom-range" min="15" max="130" value="70">
 						<span id="radiusLabel">???</span>
+
+						<br>
+
+						<!-- Change Ball Spin Speed -->
+						<label for="spinSpeed">Bar Spin Speed:</label>
+						<input type="range" id="spinSpeed" class="custom-range" min="0" max="5" value="0">
+						<span id="spinSpeedLabel">???</span>
 
 						<br>
 						
@@ -161,8 +169,9 @@
 							<input type="radio" id="line" name="displayStyle" value="line">
 							<label for="line">Line</label>
 						  </div>
-
 						<br>
+
+						
 
 						<!-- Dropdown for audio effects -->
 						<div class="dropdown">
