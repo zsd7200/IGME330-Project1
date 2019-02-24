@@ -572,7 +572,7 @@ app.main = (function () {
 				let start = i - 1 < 0 ? data[0] / 255 : data[i - 1] / 255;
 				
 				ctx.beginPath();					
-				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * 2.25, bar * start);
+				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * (ballRadius * 0.035), bar * start);
 				ctx.stroke();
 				ctx.closePath();					
 				
