@@ -14,7 +14,7 @@ app.main = (function () {
 		beamPos, beamCap, 
 		isPaused,
 		ballRadius, stars,
-		testSpin, filterType, dropdownText,
+		spinAmount, filterType, dropdownText,
 		analyserNode, gainNode, biquadFilter, audioCtx;
 		
 	//Arrays
@@ -151,11 +151,11 @@ app.main = (function () {
 		analyserNode.connect(audioCtx.destination);
 
 		biquadFilter.type = "highshelf";
-		filterType = "None";
+		filterType = "none";
 		dropdownText = document.querySelector("#dropdownMenuButton");
 
 		isFullscreen = isPaused = effects["isInvert"] = effects["isTint"] = effects["isNoise"] = false;
-		testSpin = 0;
+		spinAmount = 0;
 
 		// attach musicChange script
 		document.querySelector("#songSelector").onchange = musicChange;
@@ -245,7 +245,7 @@ app.main = (function () {
 		canvas.onmousedown = doMousedown;
 
 		//Adding listeners for the dropdown menu for audio effects
-		document.querySelector("#noneFilter").onclick = function(e){ filterType = "None"; dropdownText.innerHTML = "Select Filter Type"};
+		document.querySelector("#noneFilter").onclick = function(e){ filterType = "none"; dropdownText.innerHTML = "Select Filter Type"};
 		document.querySelector("#lowPFilter").onclick = function(e){ filterType = "lowpass"; dropdownText.innerHTML = "Lowpass"};
 		document.querySelector("#highPFilter").onclick = function(e){ filterType = "highpass"; dropdownText.innerHTML = "Highpass"};
 		document.querySelector("#bandPFilter").onclick = function(e){ filterType = "bandpass"; dropdownText.innerHTML = "Bandpass"};
@@ -520,7 +520,7 @@ app.main = (function () {
 				ctx.scale(1, -1);
 				
 				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
-				ctx.rotate(rotationAmount + testSpin);
+				ctx.rotate(rotationAmount + spinAmount);
 				ctx.translate(0, balls[0].maxBar / 1.1);
 				ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent);
 				
@@ -536,23 +536,85 @@ app.main = (function () {
 			balls[0].redraw();
 
 			//Switching to waveform data
-			//analyserNode.getByteTimeDomainData(data);
+			analyserNode.getByteTimeDomainData(data);
+			let maxCurve = 50;
+			let tempRadius = ballRadius / 2;
+
+			//Drawing bars around the center ball
+			for (let i = 0; i < 64; i++)
+			{
+				let percent = data[i] / 255;
+				percent = percent < .07 ? .07 : percent;
+				
+				ctx.save();
+				ctx.globalAlpha = .5;
+				
+				ctx.fillStyle = beamColors[fighter][2];
+				ctx.translate(balls[0].x, balls[0].y);		// behind center ball
+				ctx.scale(1, -1);
+				
+				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
+				ctx.rotate(rotationAmount + spinAmount);
+				ctx.translate(0, balls[0].maxBar / 1.1);
+				ctx.scale(1,-1);
+				ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent * .5);
+				
+				// stroke rects so they can be seen on any bg
+				ctx.lineWidth = BAR_WIDTH / 4;
+				ctx.strokeStyle = beamColors[fighter][0];
+				ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent * .5);
+				
+				ctx.restore();
+			}
 			//Displaying the waveform as an innercircle to the ball, scalable to multiple balls
 			//TODO: Figure out how to only display parts of the waveform, if we want multiple balls
-			for(let i = 0; i < data.length; i++){
-				for(let j = 0; j < balls.length *2; j+=2)
+			/*for(let i = 0; i < 64; i++)
+			{
+				
+				let lastX;
+				let lastY;
+				let thisX;
+				let thisY;
+				for(let j = 0; j < balls.length; j++)
 				{
 					let percent2 = data[i] / 255;
 
 					ctx.save();
-					ctx.fillStyle = "rgba(100,100,100,.3)";
-					ctx.beginPath();
-					ctx.arc(ballLoc[j], ballLoc[j+1], ballRadius * percent2,0,  2*Math.PI, false);
-					ctx.fill();
-					ctx.closePath();
+					ctx.translate(balls[j].x, balls[j].y);
+
+					let rotationAmount = (Math.PI * 2) * ((i) / 64);
+					let rotationAmount2 = (Math.PI * 2) * ((i + 1) / 64);
+
+					//ctx.rotate(rotationAmount);
+
+					ctx.strokeStyle = "rgba(100,100,100,.3)";
+					if(i == 0)
+					{
+						ctx.moveTo(tempRadius + maxCurve * percent2, 0);
+						lastX = tempRadius + maxCurve;
+						lastY = 0;
+						//console.log("here");
+					}
+					else
+					{
+						thisX = (tempRadius + (maxCurve * percent2)) * Math.cos(rotationAmount);
+						thisY = (tempRadius + (maxCurve * percent2)) * Math.sin(rotationAmount);
+
+						ctx.quadraticCurveTo(lastX, lastY, thisX, thisY);
+						
+						lastX = thisX;
+						lastY = thisY;
+						//console.log("other");
+					}
+
+					//ctx.fill();
+					//ctx.closePath();
+					ctx.lineWidth = 5;
+					ctx.stroke();
 					ctx.restore();
 				}
 			}
+			*/
 		}
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";
@@ -569,7 +631,7 @@ app.main = (function () {
 		if(audio.duration / audio.currentTime == 1)
 			pause.src = "media/fighters/" + enemy + "Dmgd.png";
 		
-		testSpin += .01;
+		spinAmount += .01;
 		
 		if(shenDraw["currentlyDrawing"] == false)
 			app.drawing.addEffects(ctx, effects);
@@ -579,16 +641,18 @@ app.main = (function () {
 	function modifyAudio()
 	{
 		//If there is no filter, take away the gain from the filter
-		if(filterType == "None")
+		if(filterType == "none")
 		{
-            biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
+			biquadFilter.frequency.setValueAtTime(0, audioCtx.currentTime);
+			biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
+
 		}
 		//Applying the filter, adding frequency and gain to make it noticable
 		else 
 		{
 			biquadFilter.type = filterType;
 			biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-            biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
+      biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
 		}
 	}
 	
