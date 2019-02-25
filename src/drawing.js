@@ -131,6 +131,7 @@ app.drawing = (function () {
 					
 				case "line":
 					// essentially the same as above, but not as thick
+					ctx.beginPath();
 					ctx.moveTo(0,0)
 					ctx.lineTo(0, barPerc);
 					ctx.lineWidth = BAR_WIDTH / 3;
