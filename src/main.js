@@ -141,7 +141,7 @@ app.main = (function () {
 		document.querySelector("#songSelector").onchange = musicChange;
 		
 		// handle changing of fighter/enemy/background
-		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
+		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; play.src = "media/fighters/" + fighter + state + ".png"; };
 		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/fighters/" + enemy + "Idle.png"; };
 		document.querySelector("#bgSelector").onchange = function (e) { bgName = e.target.value; app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc); };
 		
@@ -469,6 +469,7 @@ app.main = (function () {
 		{
 			audio.pause();
 			state = "Idle";
+			play.src = "media/fighters/" + fighter + "Idle.png";
 		}
 		
 		// if song is over, then the beamcap is out and the enemy is in it's "dmgd" state
@@ -482,7 +483,7 @@ app.main = (function () {
 		else
 			audio.src = "media/music/door.wav";
 		
-		// wipe everything and redraw balls
+		// wipe everything and redraw
 		app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 	}
 
