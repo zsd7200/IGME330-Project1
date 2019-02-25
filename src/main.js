@@ -169,8 +169,8 @@ app.main = (function () {
 		document.querySelector("#bgSelector").onchange = function (e) { bgName = e.target.value; app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc); };
 		
 		//Handling the changing of the drawing style for the frequency
-		document.querySelector("#rect").onchange = function(e){drawStyle = e.target.value;}
-		document.querySelector("#line").onchange = function(e){drawStyle = e.target.value;}
+		document.querySelector("#rect").onchange = function(e){if (e.target.value == "on") drawStyle = "rect";}
+		document.querySelector("#line").onchange = function(e){if (e.target.value == "on") drawStyle = "line";}
 
 
 		// handle changing stars and radius based on sliders
@@ -253,7 +253,7 @@ app.main = (function () {
 		canvas.onmousedown = doMousedown;
 
 		//Adding listeners for the dropdown menu for audio effects
-		document.querySelector("#noneFilter").onclick = function(e){ filterType = "none"; dropdownText.innerHTML = "Select Filter Type"};
+		document.querySelector("#noneFilter").onclick = function(e){ filterType = "none"; dropdownText.innerHTML = "Select Audio Filter Type"};
 		document.querySelector("#lowPFilter").onclick = function(e){ filterType = "lowpass"; dropdownText.innerHTML = "Lowpass"};
 		document.querySelector("#highPFilter").onclick = function(e){ filterType = "highpass"; dropdownText.innerHTML = "Highpass"};
 		document.querySelector("#bandPFilter").onclick = function(e){ filterType = "bandpass"; dropdownText.innerHTML = "Bandpass"};

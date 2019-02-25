@@ -168,25 +168,24 @@
 							<label class="custom-control-label" for="outlineCB">Show Outline Curve</label>
 						</div>
 
+						<!-- Inline radio buttons for rectangle/line selection -->
 						<br>
-						<p>Select Display Style For Frequency</p>
-						  <div>
-							<input type="radio" id="rect" name="displayStyle" value="rect" checked>
-							<label for="rect">Rectangle</label>
-						  </div>
-						  
-						  <div>
-							<input type="radio" id="line" name="displayStyle" value="line">
-							<label for="line">Line</label>
-						  </div>
-						<br>
-
-						
+						<p>Display Style For Frequency:</p>
+							<div class="custom-control custom-radio custom-control-inline">
+								<input type="radio" id="rect" name="drawStyle" class="custom-control-input" checked>
+								<label class="custom-control-label" for="rect">Rectangle</label>
+							</div>
+							
+							<div class="custom-control custom-radio custom-control-inline">
+								<input type="radio" id="line" name="drawStyle" class="custom-control-input">
+								<label class="custom-control-label" for="line">Line</label>
+							</div>
+						<br><br>
 
 						<!-- Dropdown for audio effects -->
 						<div class="dropdown">
 							<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								Select Filter Type
+								Select Audio Filter Type:
 							</button>
 							<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 								<p class="dropdown-item" id="noneFilter">None</p>
