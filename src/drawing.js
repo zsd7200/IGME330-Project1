@@ -5,14 +5,18 @@ app.drawing = (function () {
     // helper function to draw background
 	function drawBg(ctx, bg, bgName, bgColors, buttonLoc, CANVAS_HEIGHT, CANVAS_WIDTH)
 	{
+		// change bg source if it's new
 		if (bg.src != "media/bg/" + bgName + ".png")
 			bg.src = "media/bg/" + bgName + ".png";
 		
+		// fill entire canvas with correct background color
 		ctx.fillStyle = bgColors[bgName];
 		ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		
+		// draw image
 		ctx.drawImage(bg, (CANVAS_WIDTH - bg.width) / 2, CANVAS_HEIGHT - bg.height);
 		
-		// redraw buttons
+		// redraw buttons with fillText using font awesome
 		ctx.font = '64px "Font Awesome 5 Free"';
 		ctx.fillStyle = "black";
 		
@@ -20,8 +24,6 @@ app.drawing = (function () {
 		ctx.fillText("\uf28b", buttonLoc["pause"][0], buttonLoc["pause"][1]);
 	}
 
-    	
-	
 	// helper function to draw fighters
 	function drawFighters(ctx, play, CANVAS_HEIGHT, pause, perc = 0)
 	{
@@ -40,10 +42,13 @@ app.drawing = (function () {
 
     }
 	
+	// helper function to draw progress bar beam
 	function drawBeam(audio, play, ctx, beamColors, beamPos, fighter, beamCap, BEAM_MIDDLE_COLOR, BEAM_HEIGHT, CANVAS_HEIGHT, pause, state = "Play", perc = audio.duration / audio.currentTime)
 	{
+		// define percent value
 		let percent = audio.currentTime / audio.duration;
 		
+		// if state is play, be sure fighter is set to play image
 		if (state == "Play")
 			play.src = "media/fighters/" + fighter + "Play.png";
 		
@@ -63,8 +68,10 @@ app.drawing = (function () {
 		ctx.fillStyle = BEAM_MIDDLE_COLOR;
 		ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);	
 		
+		// change beamCap source based on color of beam
 		beamCap.src = "media/other/" + beamColors[fighter][3] + "BeamCap.png";
 		
+		// only draw beam and redraw fighters if state is play
 		if (state == "Play")
 		{
 			ctx.drawImage(beamCap, (beamPos[fighter][0] - 13) + (525 * percent), beamPos[fighter][1] - 13);
@@ -73,8 +80,10 @@ app.drawing = (function () {
 
 	}
 	
+	// helper function to draw visualizer stuff (frequency, waveform)
 	function drawVisualizer(analyserNode, balls, ctx, beamColors, fighter, spinAmount, drawStyle, BAR_WIDTH, ballRadius, effects)
 	{
+		// get frequency data
 		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
 		
 		//Showing frequency 
@@ -88,24 +97,30 @@ app.drawing = (function () {
 		for (let i = 0; i < 64; i++)
 		{
 			let percent = data[i] / 255;
-			percent = percent < .07 ? .07 : percent;
+			percent = percent < .07 ? .07 : percent; // this sets a min bar height
+			
+			// set variables to make it a little more readable
 			let bar = balls[0].maxBar;
 			let barPerc = bar * percent;
 			
+			// set fill and stroke styles to be colors based on current fighter
 			ctx.save();
 			ctx.fillStyle = beamColors[fighter][2];
 			ctx.strokeStyle = beamColors[fighter][2];
 			ctx.translate(balls[0].x, balls[0].y);		// behind center ball
 			ctx.scale(1, -1);
 			
+			// rotate around circle
 			let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
 			ctx.rotate(rotationAmount + spinAmount);
 			ctx.translate(0, bar / 1.1);
 			
+			// change drawing based on drawStyle
 			switch(drawStyle)
 			{
 				default:
 				case "rect":
+					// fill base rect
 					ctx.fillRect(0, 0, BAR_WIDTH, barPerc);
 					
 					// stroke rects so they can be seen on any bg
@@ -115,6 +130,7 @@ app.drawing = (function () {
 					break;
 					
 				case "line":
+					// essentially the same as above, but not as thick
 					ctx.moveTo(0,0)
 					ctx.lineTo(0, barPerc);
 					ctx.lineWidth = BAR_WIDTH / 3;
@@ -123,39 +139,45 @@ app.drawing = (function () {
 					break;
 			}
 			
-			// poc lines
+			// outline curves
 			if(effects["showOutline"])
 			{
+				// set styles
 				ctx.lineWidth = 2;
 				ctx.strokeStyle = beamColors[fighter][3];
+				
+				// grab last index value
 				let start = i - 1 < 0 ? data[0] / 255 : data[i - 1] / 255;
 				
+				// set startPerc and startVal at index 0
 				if(i == 0)
 				{
 					startPerc = percent;
 					startVal = start;
 				}
 				
+				// draw curve
 				ctx.beginPath();					
-				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * (ballRadius * 0.04), bar * start);
+				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * (ballRadius * 0.04), bar * start); // BAR_WIDTH * (ballRadius * 0.04) makes it so it visually looks like they are connecting
 				ctx.stroke();
 				
+				// if last loop, add extra line
 				if(i == 63)
 				{
 					ctx.lineTo(0, bar * startPerc);
 					ctx.stroke();
 				}
 				
+				// close the path
 				ctx.closePath();
-			}
-			
+			}			
 			ctx.restore();
 		}
 		
 		// make sure first ball is redrawn over bars
 		balls[0].redraw();
 
-
+		// draw waveform
 		if (effects["showWave"])
 		{
 			//Switching to waveform data
@@ -168,12 +190,13 @@ app.drawing = (function () {
 				percent = percent < .07 ? .07 : percent;
 				
 				ctx.save();
-				ctx.globalAlpha = .5;
+				ctx.globalAlpha = .5; // this way the ball can still be partially seen
 				
-				ctx.fillStyle = beamColors[fighter][2];
+				ctx.fillStyle = beamColors[fighter][2];		// bar colors change with fighters
 				ctx.translate(balls[0].x, balls[0].y);		// behind center ball
 				ctx.scale(1, -1);
 				
+				// rotation around the circle
 				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
 				ctx.rotate(rotationAmount + spinAmount);
 				ctx.translate(0, balls[0].maxBar / 1.1);
@@ -193,7 +216,6 @@ app.drawing = (function () {
 	//Adding visual effects to the 
     function addEffects(ctx, effects)
 	{
-		
 		//Grab image data
 		let imageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height);
 
@@ -206,9 +228,7 @@ app.drawing = (function () {
 		{
 			//Add blue tint
 			if(effects["isTint"])
-			{
 				data[i+2] = data[i+2] + 100;
-			}
 
 			//Invert colors
 			if(effects["isInvert"])
@@ -223,8 +243,7 @@ app.drawing = (function () {
 			//Add visual noise
 			if(effects["isNoise"] && Math.random() < .1)
 			{
-				data[i] = data[i+1] = data[i+2] = 128
-
+				data[i] = data[i+1] = data[i+2] = 12;
 				data[i+3] = 255;
 			}
 		}

@@ -4,8 +4,10 @@ app.utilities = (function () {
     //Helper function for getting Random number
     function random(min, max, arr)
     {   
+		// get random int
         let num = Math.floor((Math.random() * max) + min);
 
+		// if there is no array argument passed in, functions as a random int method
         if (arr == null)
             return num;
         
@@ -14,14 +16,13 @@ app.utilities = (function () {
         // https://stackoverflow.com/questions/27406377/javascript-generate-random-number-except-some-values?noredirect=1&lq=1
         
         let dupe = false; 										// set bool	to false
+		
         for (let i = 0; i < arr.length; i++)
             if (num == arr[i])
                 dupe = true;									// if num is equal to a value in the array, change it to true
                 
         return (dupe == false) ? num : random(min, max, arr);	// if dupe is false, return num, otherwise, call random again
     }
-    	
-	
 
 	//Helper function to get mouse location
 	function getMouse(e){
@@ -34,7 +35,7 @@ app.utilities = (function () {
 	// helper function to handle gradient backgrounds
 	function grad(ctx, topColor, bottomColor, loc = 300)
 	{
-		let grd = ctx.createLinearGradient(0, 0, 0, loc);
+		let grd = ctx.createLinearGradient(0, 0, 0, loc); // loc determines what y value to transition the color
 		grd.addColorStop(0, topColor);
 		grd.addColorStop(1, bottomColor);
 		return grd;

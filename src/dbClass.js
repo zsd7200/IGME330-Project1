@@ -3,6 +3,9 @@ class DragonBall {
 	// setup variables and draw the ball
 	constructor(ctx, x, y, rad, stars = 4, maxBar = (rad * 1.1), lineWidth = (rad * .06))
 	{
+		// setting "this" variables allows access to variables from outside this class
+		// i.e. - balls[0].rad in drawing.js would return that ball's rad value
+		
 		this.ctx = ctx;
 		this.x = x;
 		this.y = y;

@@ -142,15 +142,12 @@ app.main = (function () {
 		
 		// handle changing of fighter/enemy/background
 		document.querySelector("#playSelector").onchange = function(e){ fighter = e.target.value; };
-
 		document.querySelector("#pauseSelector").onchange = function(e) { enemy = e.target.value; pause.src = "media/fighters/" + enemy + "Idle.png"; };
-		
 		document.querySelector("#bgSelector").onchange = function (e) { bgName = e.target.value; app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc); };
 		
 		//Handling the changing of the drawing style for the frequency
 		document.querySelector("#rect").onchange = function(e){if (e.target.value == "on") drawStyle = "rect";}
 		document.querySelector("#line").onchange = function(e){if (e.target.value == "on") drawStyle = "line";}
-
 
 		// handle changing stars and radius based on sliders
 		document.querySelector("#ballRad").oninput = function(e) { 
@@ -162,7 +159,6 @@ app.main = (function () {
 			ballLoc = app.utilities.updateBallLoc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, ballRadius);
 			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
 		};
-
 
 		//Changing volume
 		document.querySelector("#volumeLabel").innerHTML = 50;
@@ -392,27 +388,19 @@ app.main = (function () {
 		if(document.fullscreen == false)
 		{
 			if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + 64 && mouse.y > buttonLoc["play"][1] - 64 && mouse.y < buttonLoc["play"][1])
-			{
 				playMusic();
-			}
 			
 			if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + 64 && mouse.y > buttonLoc["pause"][1] - 64 && mouse.y < buttonLoc["pause"][1])
-			{
 				audio.pause();
-			}
 		}
 		//If fullscreen, use alternate positions for play and pause
 		else
 		{
 			if(mouse.x > buttonLoc["play"][2] && mouse.x < buttonLoc["play"][2] + 64 && mouse.y > buttonLoc["play"][3] - 64 && mouse.y < buttonLoc["play"][3])
-			{
 				playMusic();
-			}
 			
 			if(mouse.x > buttonLoc["pause"][2] && mouse.x < buttonLoc["pause"][2] + 64 && mouse.y > buttonLoc["pause"][3] - 64 && mouse.y < buttonLoc["pause"][3])
-			{
 				audio.pause();
-			}
 		}
 
 	}
@@ -430,12 +418,14 @@ app.main = (function () {
 			ballsToDraw.pop();
 		}
 		
+		// if there are no more balls to draw, activate shenron button and disable add button
 		if (ballsToDraw.length == 0)
 		{
 			document.querySelector("#shenBut").disabled = false;
 			document.querySelector("#addBall").disabled = true;
 		}
 		
+		// always enable rem button after using this method
 		document.querySelector("#remBall").disabled = false;
 			
 	}
@@ -484,9 +474,7 @@ app.main = (function () {
 		// if song is over, then the beamcap is out and the enemy is in it's "dmgd" state
 		// return enemy to idle state and return the enemy to its proper z-index so it can be clicked
 		if (audio.duration == audio.currentTime)
-		{
 			pause.src = "media/fighters/" + enemy + "Idle.png";
-		}
 		
 		// handle door.wav since it's not an mp3
 		if (e.target.value != "door")
