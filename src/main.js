@@ -34,7 +34,9 @@ app.main = (function () {
 	let effects = {
 		"isTint" : false,
 		"isInvert" : false,
-		"isNoise" : false
+		"isNoise" : false,
+		"showWave" : false,
+		"showOutline" : false
 	};
 	
 	//Constants
@@ -150,7 +152,6 @@ app.main = (function () {
 		filterType = "none";
 
 		//Initializing miscellaneous variables
-		isPaused = effects["isInvert"] = effects["isTint"] = effects["isNoise"] = false;
 		spinAmount = 0;
 		spinSpeed = 0;
 		drawStyle = "rect";
@@ -222,12 +223,6 @@ app.main = (function () {
 			shenDraw["isDrawn"] = false; // this is necessary here because of shenron being drawn in update
 			document.querySelector("#unshenBut").disabled = true;
 			shenronFade("out");
-			
-			// wait until shenron is fully faded out to change buttons around
-			setTimeout(function(e) { 
-				document.querySelector("#shenBut").disabled = false;
-				document.querySelector("#remBall").disabled = false;	
-			}, 3000); 
 		};
 
 		//Setting up full screen 
@@ -269,9 +264,13 @@ app.main = (function () {
 		document.querySelector('#tintCB').checked = effects["isTint"];
 		document.querySelector('#invertCB').checked = effects["isInvert"];
 		document.querySelector('#noiseCB').checked = effects["isNoise"];
+		document.querySelector('#waveCB').checked = effects["showWave"];
+		document.querySelector('#outlineCB').checked = effects["showOutline"];
 		document.querySelector('#tintCB').onchange = e => effects["isTint"] = e.target.checked;
 		document.querySelector('#invertCB').onchange = e => effects["isInvert"] = e.target.checked;
 		document.querySelector('#noiseCB').onchange = e => effects["isNoise"] = e.target.checked;
+		document.querySelector('#waveCB').onchange = e => effects["showWave"] = e.target.checked;
+		document.querySelector('#outlineCB').onchange = e => effects["showOutline"] = e.target.checked;
 
 		// update for beam creation and animation
 		update();
@@ -292,9 +291,24 @@ app.main = (function () {
 			
 			// clear where shenron was and redraw everything else
 			ctx.clearRect(CANVAS_WIDTH/2 - 200, 0, shen.width, shen.height);
-			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
-			app.drawing.drawBeam(audio, play, ctx, beamColors, beamPos, fighter, beamCap, BEAM_MIDDLE_COLOR, BEAM_HEIGHT, CANVAS_HEIGHT, pause);
-			app.drawing.drawVisualizer(analyserNode, balls, ctx, beamColors, fighter, spinAmount, drawStyle, BAR_WIDTH, ballRadius);
+		
+			// if fading in, most things can be handled by redrawAll
+			if (inout == "in")
+				app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
+			
+			// if fading out, redrawAll cannot be used, as balls need to be cleared
+			if (inout == "out")
+			{
+				for(let i = 1; i < 7; i++)
+				{
+					ctx.clearRect(balls[i].x - balls[i].rad, balls[i].y - balls[i].rad, balls[i].x + balls[i].rad, balls[i].y + balls[i].rad);
+					app.drawing.drawBg(ctx, bg, bgName, bgColors, buttonLoc, CANVAS_HEIGHT, CANVAS_WIDTH);
+					app.drawing.drawFighters(ctx, play, CANVAS_HEIGHT, pause);
+				}
+			}
+			
+			// draw beam
+			app.drawing.drawBeam(audio, play, ctx, beamColors, beamPos, fighter, beamCap, BEAM_MIDDLE_COLOR, BEAM_HEIGHT, CANVAS_HEIGHT, pause, state);
 			
 			// increment or decrement timer based on in/out
 			if (inout == "in") { timer += 0.01; }
@@ -302,8 +316,22 @@ app.main = (function () {
 			
 			// set global alpha equal to timer and draw shenron, then reset global alpha to 1
 			ctx.globalAlpha = timer;
+			
+			// if fading out, redraw balls
+			if (inout == "out")
+				for(let i = 1; i < 7; i++)
+					balls[i].redraw(ballRadius/2, ballLoc[i][0], ballLoc[i][1], ctx);
+			
+			// draw shenron
 			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+
+			// reset global alpha to 1 and add effects (if necessary)
 			ctx.globalAlpha = 1;
+			
+			// draw visualizer stuff here so placement is consistent
+			app.drawing.drawVisualizer(analyserNode, balls, ctx, beamColors, fighter, spinAmount, drawStyle, BAR_WIDTH, ballRadius, effects);
+			
+			// add visual effects, if applicable
 			app.drawing.addEffects(ctx, effects);
 			
 			// if shenron has faded in, stop this loop
@@ -313,11 +341,17 @@ app.main = (function () {
 				shenDraw["currentlyDrawing"] = false;
 				shenDraw["isDrawn"] = true;
 			}
+
 			// if shenron has faded out, do the same
 			else if (timer <= 0)
 			{
 				clearInterval(fade);
 				shenDraw["currentlyDrawing"] = false;
+				shenDraw["isDrawn"] = false;
+				
+				// remove all balls but first from lists
+				for (let i = 1; i < 7; i++)
+					remBall();
 			}
 		}, 25);
 	}
@@ -474,21 +508,20 @@ app.main = (function () {
 		// clear everything and redraw all dragon balls
 		if (shenDraw["currentlyDrawing"] == false)
 			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
+		
+		// draw shenron if he has been summoned
+		if (shenDraw["isDrawn"] == true)
+			ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
+		
+		// if shenron is currently being drawn, it handles drawing these
+		if (shenDraw["currentlyDrawing"] == false)
+			app.drawing.drawVisualizer(analyserNode, balls, ctx, beamColors, fighter, spinAmount, drawStyle, BAR_WIDTH, ballRadius, effects);
 
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
-		{
 			// if shenron is currently being drawn, it handles drawing these
 			if(shenDraw["currentlyDrawing"] == false)
-			{
-				app.drawing.drawBeam(audio, play, ctx, beamColors, beamPos, fighter, beamCap, BEAM_MIDDLE_COLOR, BEAM_HEIGHT, CANVAS_HEIGHT, pause);
-				app.drawing.drawVisualizer(analyserNode, balls, ctx, beamColors, fighter, spinAmount, drawStyle, BAR_WIDTH, ballRadius);
-			}
-			
-			// draw shenron if he has been summoned
-			if (shenDraw["isDrawn"] == true)
-				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
-		}
+				app.drawing.drawBeam(audio, play, ctx, beamColors, beamPos, fighter, beamCap, BEAM_MIDDLE_COLOR, BEAM_HEIGHT, CANVAS_HEIGHT, pause, state);
 		
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";

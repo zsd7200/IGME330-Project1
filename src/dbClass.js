@@ -14,7 +14,7 @@ class DragonBall {
 	}
 	
 	// redraw method for when radius is resized
-	redraw(rad = this.rad, x = this.x, y = this.y)
+	redraw(rad = this.rad, x = this.x, y = this.y, ctx = this.ctx)
 	{
 		this.x = x;
 		this.y = y;
