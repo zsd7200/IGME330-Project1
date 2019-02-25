@@ -9,7 +9,6 @@ app.main = (function () {
 		audio, state, isPaused,
 		fighter, enemy, shen,
 		bg, bgName, bgColors,
-		isFullscreen,
 		beamPos, beamCap, drawStyle,
 		ballRadius, stars,
 		spinAmount, spinSpeed, 
@@ -151,7 +150,7 @@ app.main = (function () {
 		filterType = "none";
 
 		//Initializing miscellaneous variables
-		isFullscreen = isPaused = effects["isInvert"] = effects["isTint"] = effects["isNoise"] = false;
+		isPaused = effects["isInvert"] = effects["isTint"] = effects["isNoise"] = false;
 		spinAmount = 0;
 		spinSpeed = 0;
 		drawStyle = "rect";
@@ -242,14 +241,14 @@ app.main = (function () {
 			//Using the spacebar to toggle play pause 
 			if(event.keyCode == 32)
 				//Toggling between the two states
-				if(isPaused)
+				if(audio.paused)
 					playMusic();
 				else
-					pauseMusic();
+					audio.pause();
 			
 			//Adding fullscreen mode with F
 			if(event.keyCode == 70)
-				if(isFullscreen == false)
+				if(document.fullscreen == false)
 					app.utilities.requestFullscreen(canvas);
 
 			
@@ -294,6 +293,8 @@ app.main = (function () {
 			// clear where shenron was and redraw everything else
 			ctx.clearRect(CANVAS_WIDTH/2 - 200, 0, shen.width, shen.height);
 			app.drawing.redrawAll(ctx,bg,bgName,bgColors,buttonLoc,CANVAS_HEIGHT,CANVAS_WIDTH, play, pause, balls, ballRadius, ballLoc);
+			app.drawing.drawBeam(audio, play, ctx, beamColors, beamPos, fighter, beamCap, BEAM_MIDDLE_COLOR, BEAM_HEIGHT, CANVAS_HEIGHT, pause);
+			app.drawing.drawVisualizer(analyserNode, balls, ctx, beamColors, fighter, spinAmount, drawStyle, BAR_WIDTH, ballRadius);
 			
 			// increment or decrement timer based on in/out
 			if (inout == "in") { timer += 0.01; }
@@ -349,15 +350,6 @@ app.main = (function () {
 		// this needs to be reset in case the user restarts the same song
 		pause.src = "media/fighters/" + enemy + "Idle.png";
 	}
-	
-	// Pausing the music when the pause button is pressed
-	// State is not set to "idle" because this would look jarring, as the beam stays out
-	function pauseMusic()
-	{
-		audioCtx.suspend();
-		audio.pause(); 
-		isPaused = true;
-	}
 
 	//Allows the play and pause buttons to work within the canvas
 	function doMousedown(e)
@@ -365,7 +357,7 @@ app.main = (function () {
 		let mouse = app.utilities.getMouse(e);
 
 		//Setting different positions for play/pause button interaction based on whether the canvas is full screen or not
-		if(isFullscreen == false)
+		if(document.fullscreen == false)
 		{
 			if(mouse.x > buttonLoc["play"][0] && mouse.x < buttonLoc["play"][0] + 64 && mouse.y > buttonLoc["play"][1] - 64 && mouse.y < buttonLoc["play"][1])
 			{
@@ -374,7 +366,7 @@ app.main = (function () {
 			
 			if(mouse.x > buttonLoc["pause"][0] && mouse.x < buttonLoc["pause"][0] + 64 && mouse.y > buttonLoc["pause"][1] - 64 && mouse.y < buttonLoc["pause"][1])
 			{
-				pauseMusic();
+				audio.pause();
 			}
 		}
 		//If fullscreen, use alternate positions for play and pause
@@ -387,7 +379,7 @@ app.main = (function () {
 			
 			if(mouse.x > buttonLoc["pause"][2] && mouse.x < buttonLoc["pause"][2] + 64 && mouse.y > buttonLoc["pause"][3] - 64 && mouse.y < buttonLoc["pause"][3])
 			{
-				pauseMusic();
+				audio.pause();
 			}
 		}
 
@@ -477,22 +469,7 @@ app.main = (function () {
 		requestAnimationFrame(update);
 
 		//Changing the audio before the data is retrieved
-		modifyAudio();
-		let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
-		
-		//Showing frequency 
-		analyserNode.getByteFrequencyData(data);
-
-
-		//Getting information as to the fullscreen status of the canvas
-		if(document.fullscreen == false)
-		{
-			isFullscreen = false;
-		}
-		else
-		{
-			isFullscreen = true;
-		}
+		app.utilities.modifyAudio(filterType, biquadFilter, audioCtx);
 
 		// clear everything and redraw all dragon balls
 		if (shenDraw["currentlyDrawing"] == false)
@@ -501,143 +478,20 @@ app.main = (function () {
 		// Changing the state of the sprite based on the playing status
 		if(state == "Play")
 		{
-			let percent = audio.currentTime / audio.duration;
-			play.src = "media/fighters/" + fighter + "Play.png";
-			
-			// draw darkest color first
-			ctx.fillStyle = beamColors[fighter][0];
-			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1], 525 * percent, BEAM_HEIGHT);
-			
-			// middle color second
-			ctx.fillStyle = beamColors[fighter][1];
-			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 2, 525 * percent, BEAM_HEIGHT - 4);
-			
-			// light color third
-			ctx.fillStyle = beamColors[fighter][2];
-			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 2.5, 525 * percent, BEAM_HEIGHT - 5);
-			
-			// finish with white/BEAM_MIDDLE_COLOR in center
-			ctx.fillStyle = BEAM_MIDDLE_COLOR;
-			ctx.fillRect(beamPos[fighter][0], beamPos[fighter][1] + 4.5, 525 * percent, BEAM_HEIGHT - 9);	
-			
-			beamCap.src = "media/other/" + beamColors[fighter][3] + "BeamCap.png";
-			ctx.drawImage(beamCap, (beamPos[fighter][0] - 13) + (525 * percent), beamPos[fighter][1] - 13);
+			// if shenron is currently being drawn, it handles drawing these
+			if(shenDraw["currentlyDrawing"] == false)
+			{
+				app.drawing.drawBeam(audio, play, ctx, beamColors, beamPos, fighter, beamCap, BEAM_MIDDLE_COLOR, BEAM_HEIGHT, CANVAS_HEIGHT, pause);
+				app.drawing.drawVisualizer(analyserNode, balls, ctx, beamColors, fighter, spinAmount, drawStyle, BAR_WIDTH, ballRadius);
+			}
 			
 			// draw shenron if he has been summoned
 			if (shenDraw["isDrawn"] == true)
 				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
-			
-			//Drawing bars around the center ball
-			//Creating temporary variables
-			let startPerc;
-			let startVal;
-			for (let i = 0; i < 64; i++)
-			{
-				let percent = data[i] / 255;
-				percent = percent < .07 ? .07 : percent;
-				let bar = balls[0].maxBar;
-				let barPerc = bar * percent;
-				
-				ctx.save();
-				ctx.fillStyle = beamColors[fighter][2];
-				ctx.strokeStyle = beamColors[fighter][2];
-				ctx.translate(balls[0].x, balls[0].y);		// behind center ball
-				ctx.scale(1, -1);
-				
-				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
-				ctx.rotate(rotationAmount + spinAmount);
-				ctx.translate(0, bar / 1.1);
-				
-				switch(drawStyle)
-				{
-					default:
-					case "rect":
-						ctx.fillRect(0, 0, BAR_WIDTH, barPerc);
-						
-						// stroke rects so they can be seen on any bg
-						ctx.lineWidth = BAR_WIDTH / 4;
-						ctx.strokeStyle = beamColors[fighter][0];
-						ctx.strokeRect(0, 0, BAR_WIDTH, barPerc);
-						break;
-						
-					case "line":
-						ctx.moveTo(0,0)
-						ctx.lineTo(0, barPerc);
-						ctx.lineWidth = BAR_WIDTH / 3;
-						ctx.closePath();
-						ctx.stroke();
-						break;
-				}
-
-				// poc lines
-				ctx.lineWidth = 2;
-				ctx.strokeStyle = beamColors[fighter][3];
-				let start = i - 1 < 0 ? data[0] / 255 : data[i - 1] / 255;
-
-				if(i == 0)
-				{
-					startPerc = percent;
-					startVal = start;
-					console.log("here");
-				}
-				
-				ctx.beginPath();					
-				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * (ballRadius * 0.04), bar * start);
-				ctx.stroke();
-
-				if(i == 63)
-				{
-					ctx.lineTo(0, bar * startPerc);
-					ctx.stroke();
-				}
-				ctx.closePath();
-				ctx.restore();
-			}
-				//ctx.bezierCurveTo(0, startPerc, 0, startPerc, BAR_WIDTH * (ballRadius * 0.04), balls[0].maxBar * startVal);
-		
-			
-			// make sure first ball is redrawn over bars
-			balls[0].redraw();
-
-			//Switching to waveform data
-			analyserNode.getByteTimeDomainData(data);
-
-			//Drawing bars around the center ball
-			for (let i = 0; i < 64; i++)
-			{
-				let percent = data[i] / 255;
-				percent = percent < .07 ? .07 : percent;
-				
-				ctx.save();
-				ctx.globalAlpha = .5;
-				
-				ctx.fillStyle = beamColors[fighter][2];
-				ctx.translate(balls[0].x, balls[0].y);		// behind center ball
-				ctx.scale(1, -1);
-				
-				let rotationAmount = (Math.PI * 2) * ((i + 1) / 64);
-				ctx.rotate(rotationAmount + spinAmount);
-				ctx.translate(0, balls[0].maxBar / 1.1);
-				ctx.scale(1,-1);
-				ctx.fillRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent * .5);
-				
-				// stroke rects so they can be seen on any bg
-				ctx.lineWidth = BAR_WIDTH / 4;
-				ctx.strokeStyle = beamColors[fighter][0];
-				ctx.strokeRect(0, 0, BAR_WIDTH, balls[0].maxBar * percent * .5);
-				
-				ctx.restore();
-			}
 		}
+		
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";
-			
-		
-		// necessary so fighters are always above beam
-		// this call will _only_ draw fighter when song is over
-		// this means that enemy will be drawn in redrawAll(), and will be behind
-		// both the beam and the beam cap
-		app.drawing.drawFighters(ctx, play, CANVAS_HEIGHT, pause, audio.duration / audio.currentTime);
 		
 		// if song is over, change enemy state to "dmgd"
 		if(audio.duration / audio.currentTime == 1)
@@ -646,28 +500,9 @@ app.main = (function () {
 		//Adding to the amount the bars spin 
 		spinAmount += spinSpeed;
 		
+		// if shenron is currently being drawn, it handles adding effects
 		if(shenDraw["currentlyDrawing"] == false)
 			app.drawing.addEffects(ctx, effects);
-	}
-
-	//Change the audio effect of the song based on the selection from the dropdown
-	function modifyAudio()
-	{
-		//If there is no filter, take away the gain from the filter
-		if(filterType == "none")
-		{
-			biquadFilter.type = "highshelf"; //Necessary so the filter correctly goes back to having no effects applied
-			biquadFilter.frequency.setValueAtTime(0, audioCtx.currentTime);
-			biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-		}
-		
-		//Applying the filter, adding frequency and gain to make it noticable
-		else 
-		{
-			biquadFilter.type = filterType;
-			biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-			biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
-		}
 	}
 	
 	return{

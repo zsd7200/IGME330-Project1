@@ -106,15 +106,36 @@ app.utilities = (function () {
 			  element.webkitRequestFullscreen();
 			}
 	}
+	
+	//Change the audio effect of the song based on the selection from the dropdown
+	function modifyAudio(filterType, biquadFilter, audioCtx)
+	{
+		//If there is no filter, take away the gain from the filter
+		if(filterType == "none")
+		{
+			biquadFilter.type = "highshelf"; //Necessary so the filter correctly goes back to having no effects applied
+			biquadFilter.frequency.setValueAtTime(0, audioCtx.currentTime);
+			biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
+		}
+		
+		//Applying the filter, adding frequency and gain to make it noticable
+		else 
+		{
+			biquadFilter.type = filterType;
+			biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+			biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
+		}
+	}
 		
     
     return{
         random,
         getMouse,
-			grad,
-			setBgColors,
-			setBeamPos,
-			updateBallLoc,
-			requestFullscreen
+		grad,
+		setBgColors,
+		setBeamPos,
+		updateBallLoc,
+		requestFullscreen,
+		modifyAudio
     }
 })();
