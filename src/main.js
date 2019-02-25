@@ -72,27 +72,6 @@ app.main = (function () {
 		//Getting the canvas
 		canvas = document.querySelector("canvas");
 		ctx = canvas.getContext("2d");
-		
-		// add listeners for dragging and dropping audio files
-		let dragBox = document.querySelector("#dragBox");
-		let drag = document.querySelector("#drag");
-
-		dragBox.ondragover = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.8)"; };
-		dragBox.ondragleave = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; };
-		dragBox.onmouseover = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.8)"; };
-		dragBox.onmouseleave = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; };
-		
-		// play dropped in file
-		dragBox.ondrop = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; if(e.dataTransfer.files.length > 1) drag.innerHTML = "Please only drag in one file!"; else customMusicHandler(e.dataTransfer.files[0]); };
-		
-		// force a hidden input for file upload dialog
-		// https://www.aspsnippets.com/Articles/Open-Fileupload-Upload-File-on-Button-Click-using-JavaScript-and-jQuery.aspx
-		dragBox.onclick = function(e) { document.querySelector("#clickUpload").click(); };
-		
-		// play file from input
-		document.querySelector("#clickUpload").oninput = function (e) { customMusicHandler(document.querySelector("#clickUpload").files[0]); };
-
-
 		const NUM_SAMPLES = 128;
 		
 		//Getting elements from the DOM
@@ -251,6 +230,25 @@ app.main = (function () {
 
 		//Adding event for clicking on the vanvas
 		canvas.onmousedown = doMousedown;
+		
+		// add listeners for dragging and dropping audio files
+		let dragBox = document.querySelector("#dragBox");
+		let drag = document.querySelector("#drag");
+
+		dragBox.ondragover = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.8)"; };
+		dragBox.ondragleave = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; };
+		dragBox.onmouseover = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.8)"; };
+		dragBox.onmouseleave = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; };
+		
+		// play dropped in file
+		dragBox.ondrop = function(e) { e.preventDefault(); drag.style.backgroundColor = "rgba(0,0,0, 0.5)"; if(e.dataTransfer.files.length > 1) drag.innerHTML = "Please only drag in one file!"; else customMusicHandler(e.dataTransfer.files[0]); };
+		
+		// force a hidden input for file upload dialog
+		// https://www.aspsnippets.com/Articles/Open-Fileupload-Upload-File-on-Button-Click-using-JavaScript-and-jQuery.aspx
+		dragBox.onclick = function(e) { document.querySelector("#clickUpload").click(); };
+		
+		// play file from input
+		document.querySelector("#clickUpload").oninput = function (e) { customMusicHandler(document.querySelector("#clickUpload").files[0]); };
 
 		//Adding listeners for the dropdown menu for audio effects
 		document.querySelector("#noneFilter").onclick = function(e){ filterType = "none"; dropdownText.innerHTML = "Select Audio Filter Type"};
@@ -473,6 +471,9 @@ app.main = (function () {
 	// handles if music is changed from dropdown
 	function musicChange(e)
 	{
+		// reset dragbox text
+		document.querySelector("#drag").innerHTML = "Click here to upload music or drag music file here";
+		
 		// if music is currently playing, pause it
 		if(state == "Play")
 		{
@@ -526,9 +527,12 @@ app.main = (function () {
 		else if (state == "Idle")
 			play.src = "media/fighters/" + fighter + "Idle.png";
 		
-		// if song is over, change enemy state to "dmgd"
+		// if song is over, change enemy state to "dmgd" and change dragbox text back to original
 		if(audio.duration / audio.currentTime == 1)
+		{
 			pause.src = "media/fighters/" + enemy + "Dmgd.png";
+			document.querySelector("#drag").innerHTML = "Click here to upload music or drag music file here";
+		}
 		
 		//Adding to the amount the bars spin 
 		spinAmount += spinSpeed;
