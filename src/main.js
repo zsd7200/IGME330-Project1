@@ -528,6 +528,9 @@ app.main = (function () {
 				ctx.drawImage(shen, CANVAS_WIDTH/2 - 200, 0);
 			
 			//Drawing bars around the center ball
+			//Creating temporary variables
+			let startPerc;
+			let startVal;
 			for (let i = 0; i < 64; i++)
 			{
 				let percent = data[i] / 255;
@@ -570,14 +573,28 @@ app.main = (function () {
 				ctx.lineWidth = 2;
 				ctx.strokeStyle = beamColors[fighter][3];
 				let start = i - 1 < 0 ? data[0] / 255 : data[i - 1] / 255;
+
+				if(i == 0)
+				{
+					startPerc = percent;
+					startVal = start;
+					console.log("here");
+				}
 				
 				ctx.beginPath();					
-				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * (ballRadius * 0.035), bar * start);
+				ctx.bezierCurveTo(0, barPerc, 0, barPerc, BAR_WIDTH * (ballRadius * 0.04), bar * start);
 				ctx.stroke();
-				ctx.closePath();					
-				
+
+				if(i == 63)
+				{
+					ctx.lineTo(0, bar * startPerc);
+					ctx.stroke();
+				}
+				ctx.closePath();
 				ctx.restore();
 			}
+				//ctx.bezierCurveTo(0, startPerc, 0, startPerc, BAR_WIDTH * (ballRadius * 0.04), balls[0].maxBar * startVal);
+		
 			
 			// make sure first ball is redrawn over bars
 			balls[0].redraw();
